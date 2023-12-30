@@ -1,3 +1,5 @@
+import os
+
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -115,4 +117,32 @@ class MainWindow(QMainWindow):
         )
 
     def execute(self):
-        self.path_table.get_removed_redudant_paths()
+        refined_paths = self.path_table.get_removed_redudant_paths()
+        for path in refined_paths:
+            if path["type"] == "folder":
+                self.execute_folder(path["path"])
+            elif path["type"] == "file":
+                self.execute_file(path["path"])
+
+    def execute_folder(self, folder_path):
+        listdir = os.listdir(folder_path)
+
+        audio_files = [
+            path for path in listdir if os.path.isfile(os.path.join(folder_path, path))
+        ]
+        folders = [
+            path for path in listdir if os.path.isdir(os.path.join(folder_path, path))
+        ]
+
+        for audio_file in audio_files:
+            self.execute_file(os.path.join(folder_path, audio_file))
+
+        for folder in folders:
+            self.execute_folder(os.path.join(folder_path, folder))
+
+    def execute_file(self, file_path):
+        parent_folder_path = os.path.dirname(file_path)
+        transcription_folder_path = os.path.join(parent_folder_path, "transcription")
+
+        if not os.path.exists(transcription_folder_path):
+            os.makedirs(transcription_folder_path, exist_ok=True)
