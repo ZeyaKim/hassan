@@ -22,10 +22,9 @@ class Translator:
             return True
         except Exception as exc:
             logging.error(exc)
-            
+
         logging.info("Invalid API key")
         return False
-        
 
     def edit_api_key(self, new_api_key):
         if self.is_valid_api_key(new_api_key):

@@ -1,20 +1,22 @@
-
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QLabel,
     QLineEdit,
     QMainWindow,
+    QMenu,
     QPlainTextEdit,
     QPushButton,
+    QSystemTrayIcon,
     QVBoxLayout,
     QWidget,
-    QSystemTrayIcon,
-    QMenu,
-    QApplication,
 )
-from PySide6.QtGui import QIcon, QAction
+
 from src.translator import Translator
+
 from .path_list import PathList
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -61,7 +63,7 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
-        
+
         self.create_tray_icon()
 
     def add_file_paths(self):
@@ -91,20 +93,22 @@ class MainWindow(QMainWindow):
     def create_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon("assets/icon/hassan_icon.png"))
-        
+
         tray_menu = QMenu()
         show_action = QAction("보기", self)
         show_action.triggered.connect(self.show)
         tray_menu.addAction(show_action)
-        
+
         exit_action = QAction("종료", self)
         exit_action.triggered.connect(QApplication.instance().quit)
         tray_menu.addAction(exit_action)
-        
+
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
-    
+
     def closeEvent(self, event):
         event.ignore()
         self.hide()
-        self.tray_icon.showMessage('Work Hard Hassan!', '하산이 야근하고 있습니다!', QSystemTrayIcon.Information, 2000)
+        self.tray_icon.showMessage(
+            "Work Hard Hassan!", "하산이 야근하고 있습니다!", QSystemTrayIcon.Information, 2000
+        )
