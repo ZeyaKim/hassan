@@ -8,7 +8,11 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QSystemTrayIcon,
+    QMenu,
+    QApplication,
 )
+from PySide6.QtGui import QIcon, QAction
 from src.translator import Translator
 from .path_list import PathList
 
@@ -44,7 +48,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.api_key_lineedit)
 
         self.api_key_edit_button = QPushButton("수정", self)
-        self.api_key_edit_button.clicked.connect(self.change_api_key)
+        self.api_key_edit_button.clicked.connect(self.edit_api_key)
         layout.addWidget(self.api_key_edit_button)
 
         self.execute_button = QPushButton("번역", self)
@@ -57,6 +61,8 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+        
+        self.create_tray_icon()
 
     def add_file_paths(self):
         file_dialog = QFileDialog(self)
@@ -73,7 +79,7 @@ class MainWindow(QMainWindow):
 
         self.path_list.add_new_path(selected_folder_path)
 
-    def change_api_key(self):
+    def edit_api_key(self):
         new_api_key = self.api_key_lineedit.text()
         self.translator.edit_api_key(new_api_key)
         self.api_key_label.setText(f"API Key: {self.translator.load_api_key()}")
@@ -81,3 +87,24 @@ class MainWindow(QMainWindow):
     def init_api_key_label(self):
         api_key = self.translator.load_api_key()
         self.api_key_label.setText(f"API Key: {api_key}")
+
+    def create_tray_icon(self):
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("assets/icon/hassan_icon.png"))
+        
+        tray_menu = QMenu()
+        show_action = QAction("보기", self)
+        show_action.triggered.connect(self.show)
+        tray_menu.addAction(show_action)
+        
+        exit_action = QAction("종료", self)
+        exit_action.triggered.connect(QApplication.instance().quit)
+        tray_menu.addAction(exit_action)
+        
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+    
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.tray_icon.showMessage('Work Hard Hassan!', '하산이 야근하고 있습니다!', QSystemTrayIcon.Information, 2000)
