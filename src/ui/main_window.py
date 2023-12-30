@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.audio_extractor import AudioExtractor
 from src.translator import Translator
 
 from .path_table import PathTable
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.translator = Translator()
+        self.audio_extractor = AudioExtractor()
 
         self.init_ui()
 
@@ -141,8 +143,5 @@ class MainWindow(QMainWindow):
             self.execute_folder(os.path.join(folder_path, folder))
 
     def execute_file(self, file_path):
-        parent_folder_path = os.path.dirname(file_path)
-        transcription_folder_path = os.path.join(parent_folder_path, "transcription")
-
-        if not os.path.exists(transcription_folder_path):
-            os.makedirs(transcription_folder_path, exist_ok=True)
+        extracted_transcription = self.audio_extractor.extract_transcription(file_path)
+        translated_transcription = self.translator.translate(extracted_audio)
