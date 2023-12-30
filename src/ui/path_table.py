@@ -44,19 +44,14 @@ class PathTable(QTableWidget):
                 self.removeRow(selected_row)
 
     def get_removed_redudant_paths(self):
-        paths = []
-        for row in range(self.rowCount()):
-            paths.append({
-                'path': self.item(row, 0).text(),
-                'type': self.item(row, 1).text()
-            })
+        paths = [{
+            'path': self.item(row, 0).text(),
+            'type': self.item(row, 1).text()
+        } for row in range(self.rowCount())]
         
-        print(paths)
-        folders = [path for path in paths if path['type'] == 'folder']
-        for folder in folders:
-            for path in paths:
-                if path['path'].startswith(folder['path']) and path['path'] != folder['path']:
-                    paths.remove(path)
-        print(paths)
-                
-                
+        filtered_paths = []
+        for path in paths:
+            if not any(path['path'] != other_path['path'] and path['path'].startswith(other_path['path']) for other_path in paths):
+                filtered_paths.append(path)
+        print(filtered_paths)
+        return filtered_paths
