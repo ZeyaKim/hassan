@@ -27,15 +27,12 @@ class PathList(QListWidget):
 
     def show_context_menu(self, position):
         menu = QMenu()
-
-        # 메뉴 항목(액션) 추가
+        
         delete_action = QAction("삭제", self)
         menu.addAction(delete_action)
 
-        # 선택된 액션 가져오기
         action = menu.exec(self.mapToGlobal(position))
 
-        # 삭제 액션 처리
         if action == delete_action:
             selected_item = self.currentItem()
             if selected_item:
