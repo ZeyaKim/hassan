@@ -18,7 +18,8 @@ def init_logger():
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_formatter = logging.Formatter(
-        "%(asctime)s :: %(levelname)s :: %(module)s :: %(message)s", "%Y-%m-%d %H:%M:%S"
+        "%(asctime)s :: %(levelname)s :: %(module)s :: %(lineno)s :: %(message)s",
+        "%Y-%m-%d %H:%M:%S"
     )
     console_handler.setFormatter(console_formatter)
 
@@ -26,7 +27,7 @@ def init_logger():
     file_handler = logging.FileHandler("logs/error.log")
     file_handler.setLevel(logging.ERROR)
     file_formatter = logging.Formatter(
-        "%(asctime)s :: %(levelname)s :: %(module)s :: %(lineno)s\n%(message)s",
+        "%(asctime)s :: %(levelname)s :: %(module)s :: %(lineno)s :: %(message)s",
         "%Y-%m-%d %H:%M:%S",
     )
     file_handler.setFormatter(file_formatter)

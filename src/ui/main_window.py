@@ -1,10 +1,16 @@
-import logging
 
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 from src.translator import Translator
-from PySide6.QtWidgets import (QFileDialog, QLabel, QLineEdit, QListWidget,
-                               QMainWindow, QPlainTextEdit, QPushButton,
-                               QVBoxLayout, QWidget)
-
+from .path_list import PathList
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -27,8 +33,8 @@ class MainWindow(QMainWindow):
         self.add_folder_paths_button.clicked.connect(self.add_folder_paths)
         layout.addWidget(self.add_folder_paths_button)
 
-        self.added_paths_list = QListWidget(self)
-        layout.addWidget(self.added_paths_list)
+        self.path_list = PathList()
+        layout.addWidget(self.path_list)
 
         self.api_key_label = QLabel()
         self.init_api_key_label()
@@ -41,7 +47,7 @@ class MainWindow(QMainWindow):
         self.api_key_edit_button.clicked.connect(self.change_api_key)
         layout.addWidget(self.api_key_edit_button)
 
-        self.execute_button = QPushButton("실행", self)
+        self.execute_button = QPushButton("번역", self)
         layout.addWidget(self.execute_button)
 
         self.progress_log_viewer = QPlainTextEdit(self)
@@ -58,43 +64,20 @@ class MainWindow(QMainWindow):
             self, "Select Audio Files", "", "Audio Files (*.mp3 *.wav)"
         )
 
-        added_paths = [
-            self.added_paths_list.item(i).text()
-            for i in range(self.added_paths_list.count())
-        ]
-
         for selected_file_path in file_paths[0]:
-            if selected_file_path in added_paths:
-                logging.info(f"{selected_file_path} is already added")
-                continue
-            else:
-                self.added_paths_list.addItem(selected_file_path)
-                logging.info(f"{selected_file_path} is added")
+            self.path_list.add_new_path(selected_file_path)
 
     def add_folder_paths(self):
         folder_dialog = QFileDialog(self)
         selected_folder_path = folder_dialog.getExistingDirectory(self, "Select Folder")
 
-        added_paths = [
-            self.added_paths_list.item(i).text()
-            for i in range(self.added_paths_list.count())
-        ]
+        self.path_list.add_new_path(selected_folder_path)
 
-        if selected_folder_path in added_paths:
-            logging.info(f"{selected_folder_path} is already added")
-        else:
-            self.added_paths_list.addItem(selected_folder_path)
-            logging.info(f"{selected_folder_path} is added")
-
-    def is_valid_api_key(self, api_key):
-        return True
-    
     def change_api_key(self):
         new_api_key = self.api_key_lineedit.text()
-        if self.is_valid_api_key(new_api_key):
-            self.api_key = new_api_key
-            self.init_api_key_label()
-            
+        self.translator.edit_api_key(new_api_key)
+        self.api_key_label.setText(f"API Key: {self.translator.load_api_key()}")
+
     def init_api_key_label(self):
-        api_key = self.translator.api_key
+        api_key = self.translator.load_api_key()
         self.api_key_label.setText(f"API Key: {api_key}")
