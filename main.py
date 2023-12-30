@@ -30,7 +30,7 @@ def init_logger():
         "%Y-%m-%d %H:%M:%S",
     )
     file_handler.setFormatter(file_formatter)
-    
+
     # 로거에 핸들러 추가
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
