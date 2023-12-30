@@ -1,5 +1,8 @@
 import logging
 import os
+import sys
+from PySide6.QtWidgets import QApplication
+from src.ui.main_window import MainWindow
 
 def init_logger():
     os.makedirs('logs', exist_ok=True)
@@ -29,4 +32,10 @@ def init_logger():
 
 if __name__ == '__main__':
     init_logger()
-    
+    app = QApplication(sys.argv)
+
+    # 기본적인 윈도우 (QWidget) 생성
+    window = MainWindow()
+    window.show()
+    # 이벤트 루프 실행
+    sys.exit(app.exec())
