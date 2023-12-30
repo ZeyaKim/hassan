@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("Work Hard Hassan!")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1080, 720)
 
         layout = QVBoxLayout()
 
@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.api_key_edit_button)
 
         self.execute_button = QPushButton("번역", self)
+        self.execute_button.clicked.connect(self.execute)
         layout.addWidget(self.execute_button)
 
         self.progress_log_viewer = QPlainTextEdit(self)
@@ -114,4 +115,4 @@ class MainWindow(QMainWindow):
         )
 
     def execute(self):
-        ...
+        self.path_table.get_removed_redudant_paths()
