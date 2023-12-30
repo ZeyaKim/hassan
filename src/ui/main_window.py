@@ -1,5 +1,6 @@
 import logging
 
+from src.translator import Translator
 from PySide6.QtWidgets import (QFileDialog, QLabel, QLineEdit, QListWidget,
                                QMainWindow, QPlainTextEdit, QPushButton,
                                QVBoxLayout, QWidget)
@@ -8,7 +9,7 @@ from PySide6.QtWidgets import (QFileDialog, QLabel, QLineEdit, QListWidget,
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.api_key = ""
+        self.translator = Translator()
 
         self.init_ui()
 
@@ -29,13 +30,15 @@ class MainWindow(QMainWindow):
         self.added_paths_list = QListWidget(self)
         layout.addWidget(self.added_paths_list)
 
-        self.api_key_label = QLabel(f"API Key: {self.api_key}", self)
+        self.api_key_label = QLabel()
+        self.init_api_key_label()
         layout.addWidget(self.api_key_label)
 
         self.api_key_lineedit = QLineEdit(self)
         layout.addWidget(self.api_key_lineedit)
 
         self.api_key_edit_button = QPushButton("수정", self)
+        self.api_key_edit_button.clicked.connect(self.change_api_key)
         layout.addWidget(self.api_key_edit_button)
 
         self.execute_button = QPushButton("실행", self)
@@ -82,3 +85,16 @@ class MainWindow(QMainWindow):
         else:
             self.added_paths_list.addItem(selected_folder_path)
             logging.info(f"{selected_folder_path} is added")
+
+    def is_valid_api_key(self, api_key):
+        return True
+    
+    def change_api_key(self):
+        new_api_key = self.api_key_lineedit.text()
+        if self.is_valid_api_key(new_api_key):
+            self.api_key = new_api_key
+            self.init_api_key_label()
+            
+    def init_api_key_label(self):
+        api_key = self.translator.api_key
+        self.api_key_label.setText(f"API Key: {api_key}")
