@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 
 from src.translator import Translator
 
-from .path_list import PathList
+from .path_table import PathTable
 
 
 class MainWindow(QMainWindow):
@@ -39,8 +39,8 @@ class MainWindow(QMainWindow):
         self.add_folder_paths_button.clicked.connect(self.add_folder_paths)
         layout.addWidget(self.add_folder_paths_button)
 
-        self.path_list = PathList()
-        layout.addWidget(self.path_list)
+        self.path_table = PathTable()
+        layout.addWidget(self.path_table)
 
         self.api_key_label = QLabel()
         self.init_api_key_label()
@@ -73,13 +73,13 @@ class MainWindow(QMainWindow):
         )
 
         for selected_file_path in file_paths[0]:
-            self.path_list.add_new_path(selected_file_path)
+            self.path_table.add_new_path(selected_file_path, path_type="file")
 
     def add_folder_paths(self):
         folder_dialog = QFileDialog(self)
         selected_folder_path = folder_dialog.getExistingDirectory(self, "Select Folder")
 
-        self.path_list.add_new_path(selected_folder_path)
+        self.path_table.add_new_path(selected_folder_path, path_type="folder")
 
     def edit_api_key(self):
         new_api_key = self.api_key_lineedit.text()
@@ -112,3 +112,6 @@ class MainWindow(QMainWindow):
         self.tray_icon.showMessage(
             "Work Hard Hassan!", "하산이 야근하고 있습니다!", QSystemTrayIcon.Information, 2000
         )
+
+    def execute(self):
+        ...
