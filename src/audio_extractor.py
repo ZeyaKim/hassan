@@ -1,9 +1,8 @@
 import toml
 
 class AudioExtractor:
-    def __init__(self, audio_path):
+    def __init__(self):
         self.models = ['small', 'medium', 'large']
-        
         
     def load_model_config(self):
         with open("config.toml", "r") as f:
@@ -12,7 +11,10 @@ class AudioExtractor:
         return model
 
     def change_model_config(self, model):
-        with open("config.toml", "rw") as f:
+        with open("config.toml", "r") as f:
             config = toml.load(f)
-            config["model"]["audio"] = model
+            
+        config["model"]["audio"] = model
+        
+        with open("config.toml", "w") as f:
             toml.dump(config, f)
