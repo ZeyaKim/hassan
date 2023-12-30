@@ -1,16 +1,8 @@
 import logging
 
-from PySide6.QtWidgets import (
-    QFileDialog,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QMainWindow,
-    QPlainTextEdit,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QFileDialog, QLabel, QLineEdit, QListWidget,
+                               QMainWindow, QPlainTextEdit, QPushButton,
+                               QVBoxLayout, QWidget)
 
 
 class MainWindow(QMainWindow):
