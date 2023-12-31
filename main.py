@@ -12,7 +12,7 @@ def init_logger():
 
     # 로거 생성 및 레벨 설정
     logger = logging.getLogger("root")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     # 콘솔 핸들러 생성 및 설정
     console_handler = logging.StreamHandler()
@@ -36,7 +36,6 @@ def init_logger():
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
     logger.info("Logger initialized")
-
 
 if __name__ == "__main__":
     init_logger()
