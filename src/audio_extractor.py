@@ -8,8 +8,9 @@ import whisper
 class AudioExtractor:
     def __init__(self):
         self.models = ["small", "medium", "large"]
-        self.model = None
-        self.model_config = self.load_model_config()
+        self.current_model = self.load_model_config()
+        self.last_model = self.current_model
+        self.model = whisper.load_model(self.current_model)
 
     def load_model_config(self):
         with open("config.toml", "r") as f:
@@ -25,21 +26,29 @@ class AudioExtractor:
 
         with open("config.toml", "w") as f:
             toml.dump(config, f)
-            self.model_config = model
+            self.current_model = model
 
     def extract_transcription(self, file_path):
-        if self.model is None or self.model_config != self.load_model_config():
-            self.model = whisper.load_model(self.load_model_config())
+        if self.current_model != self.last_model:
+            self.model = whisper.load_model(self.current_model)
+            self.last_model = self.current_model
 
         file_name = os.path.basename(file_path).split(".")[0]
         parent_folder_path = os.path.dirname(file_path)
-        transcription_folder_path = os.path.join(parent_folder_path, "transcription")
 
-        if not os.path.exists(transcription_folder_path):
-            os.makedirs(transcription_folder_path, exist_ok=True)
+        try:
+            audio = whisper.load_audio(file_path)
+        except Exception as exc:
+            error_msg = f"Failed to load audio from {file_path}: {exc}"
+            logging.error(error_msg)
+            return
+        try:
+            transcription = self.model.transcribe(audio)
+        except Exception as exc:
+            error_msg = f"Failed to transcribe audio from {file_path}: {exc}"
+            logging.error(error_msg)
+            return
 
-        audio = whisper.load_audio(file_path)
-        transcription = self.model.transcribe(audio)
         segment = transcription["segments"]
 
         transcription_dict = [
@@ -53,7 +62,7 @@ class AudioExtractor:
 
         try:
             with open(
-                os.path.join(transcription_folder_path, f"{file_name}.txt"), "w"
+                os.path.join(parent_folder_path, f"{file_name}_transcription.txt"), "w"
             ) as f:
                 for sentence in transcription_dict:
                     f.write(
