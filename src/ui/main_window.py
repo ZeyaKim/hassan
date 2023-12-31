@@ -1,3 +1,4 @@
+import logging
 import os
 
 from PySide6.QtGui import QAction, QIcon
@@ -16,8 +17,8 @@ from PySide6.QtWidgets import (
 )
 
 from src.audio_extractor import AudioExtractor
-from src.translator import Translator
 from src.subtitle_generator import SubtitleGenerator
+from src.translator import Translator
 
 from .path_table import PathTable
 
@@ -116,6 +117,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         event.ignore()
         self.hide()
+
         self.tray_icon.showMessage(
             "Work Hard Hassan!", "하산이 야근하고 있습니다!", QSystemTrayIcon.Information, 2000
         )
@@ -127,8 +129,10 @@ class MainWindow(QMainWindow):
                 self.execute_folder(path["path"])
             elif path["type"] == "file":
                 self.execute_file(path["path"])
+        self.path_table.setRowCount(0)
 
     def execute_folder(self, folder_path):
+        logging.info(f"Executing {folder_path}")
         listdir = os.listdir(folder_path)
 
         audio_files = [
@@ -145,7 +149,10 @@ class MainWindow(QMainWindow):
             self.execute_folder(os.path.join(folder_path, folder))
 
     def execute_file(self, file_path):
+        logging.info(f"Executing {file_path}")
         extracted_transcription = self.audio_extractor.extract_transcription(file_path)
-        translated_transcription = self.translator.translate(file_path, extracted_transcription)
+        translated_transcription = self.translator.translate(
+            file_path, extracted_transcription
+        )
         self.subtitle_generator.generate_subtitle(file_path, translated_transcription)
-        
+        logging.info(f"Finished {file_path}")
