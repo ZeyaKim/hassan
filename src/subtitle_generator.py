@@ -1,6 +1,7 @@
-import pysubs2
 import logging
 import os
+
+import pysubs2
 
 
 class SubtitleGenerator:
@@ -9,23 +10,32 @@ class SubtitleGenerator:
         self.cur_ext = "srt"
 
     def generate_subtitle(self, file_path, translated_transcription):
-        file_name = os.path.basename(file_path).split(".")[0]
+        logging.info(f"Starting subtitle generation for {file_path}")
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
         parent_folder_path = os.path.dirname(file_path)
 
         subs = pysubs2.SSAFile()
         try:
             for sentence in translated_transcription:
-                start_second, start_ms = map(int(sentence["start"].split(".")))
-                end_second, end_ms = map(int(sentence["end"].split(".")))
-                text = sentence["text"]
+                start_second, start_ms = map(int, str(sentence["start"]).split("."))
+                end_second, end_ms = map(int, str(sentence["end"]).split("."))
+                text = sentence["translated_text"]
 
                 subs.append(
-                    pysubs2.SSAEvent(start=pysubs2.make_time(s=start_second,
-                                                             ms=start_ms),
-                                     end=pysubs2.make_time(s=end_second,
-                                                           ms=end_ms),
-                                     text=text))
-            subs.save(os.path.join(parent_folder_path, f'{file_name}.{self.cur_ext}'), encoding="utf-8")
+                    pysubs2.SSAEvent(
+                        start=pysubs2.make_time(s=start_second, ms=start_ms),
+                        end=pysubs2.make_time(s=end_second, ms=end_ms),
+                        text=text,
+                    )
+                )
+            subs_path = os.path.join(parent_folder_path, f"{file_name}.{self.cur_ext}")
+            subs.save(
+                subs_path,
+                encoding="utf-8",
+            )
+            logging.info(f"Subtitle successfully generated at {subs_path}")
 
         except Exception as exc:
-            logging.error(f"Erorr occured while generating subtitle: {exc}")
+            logging.error(f"Error while generating subtitle for {file_path}: {exc}")
+
+        logging.info(f"Subtitle is generated at {parent_folder_path}")
