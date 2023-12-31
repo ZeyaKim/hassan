@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 
 from src.audio_extractor import AudioExtractor
 from src.translator import Translator
+from src.subtitle_generator import SubtitleGenerator
 
 from .path_table import PathTable
 
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.translator = Translator()
         self.audio_extractor = AudioExtractor()
+        self.subtitle_generator = SubtitleGenerator()
 
         self.init_ui()
 
@@ -144,4 +146,6 @@ class MainWindow(QMainWindow):
 
     def execute_file(self, file_path):
         extracted_transcription = self.audio_extractor.extract_transcription(file_path)
-        translated_transcription = self.translator.translate(extracted_audio)
+        translated_transcription = self.translator.translate(file_path, extracted_transcription)
+        self.subtitle_generator.generate_subtitle(file_path, translated_transcription)
+        
