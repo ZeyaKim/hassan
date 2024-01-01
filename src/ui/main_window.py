@@ -136,8 +136,9 @@ class MainWindow(QMainWindow):
         listdir = os.listdir(folder_path)
 
         audio_files = [
-            path for path in listdir if os.path.isfile(os.path.join(folder_path, path))
+            path for path in listdir if os.path.isfile(os.path.join(folder_path, path)) and path.split(".")[-1] in ["mp3", "wav"]
         ]
+    
         folders = [
             path for path in listdir if os.path.isdir(os.path.join(folder_path, path))
         ]
