@@ -59,5 +59,4 @@ class PathTable(QTableWidget):
                 for other_path in paths
             ):
                 filtered_paths.append(path)
-        print(filtered_paths)
         return filtered_paths

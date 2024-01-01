@@ -44,7 +44,6 @@ class AudioExtractor:
                 logging.error(error_msg)
                 return
             
-        whisper.available_models()
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         parent_folder_path = os.path.dirname(file_path)
 
@@ -55,6 +54,7 @@ class AudioExtractor:
             error_msg = f"Failed to load audio from {file_path}: {exc}"
             logging.error(error_msg)
             return
+        
         try:
             logging.info("Transcribing audio")
             transcription = self.model.transcribe(audio, fp16=False)
@@ -62,6 +62,8 @@ class AudioExtractor:
             error_msg = f"Failed to transcribe audio from {file_path}: {exc}"
             logging.error(error_msg)
             return
+        finally:
+            audio = None
 
         segment = transcription["segments"]
 
@@ -82,7 +84,7 @@ class AudioExtractor:
             with open(transcription_file_path, "w") as f:
                 for sentence in transcription_dict:
                     f.write(
-                        f"{sentence['start']} ~ {sentence['end']}\n{sentence['text']}\n"
+                        f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["text"]}\n'
                     )
             logging.info("Transcription successfully saved")
         except Exception as exc:
