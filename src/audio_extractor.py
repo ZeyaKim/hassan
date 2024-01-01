@@ -2,8 +2,9 @@ import logging
 import os
 
 import toml
-import whisper
 import torch
+import whisper
+
 
 class AudioExtractor:
     def __init__(self):
@@ -35,7 +36,7 @@ class AudioExtractor:
         logging.info(f"Starting transcription for {file_path}")
         if self.current_model != self.last_model or self.model is None:
             try:
-                logging.info(f'Checking cuda device: {torch.cuda.get_device_name()}')
+                logging.info(f"Checking cuda device: {torch.cuda.get_device_name()}")
                 logging.info(f"Loading Whisper model: {self.current_model}")
                 self.model = whisper.load_model(self.current_model, device="cuda")
                 self.last_model = self.current_model
@@ -43,7 +44,7 @@ class AudioExtractor:
                 error_msg = f"Failed to load Whisper model: {exc}"
                 logging.error(error_msg)
                 return
-            
+
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         parent_folder_path = os.path.dirname(file_path)
 
@@ -54,7 +55,7 @@ class AudioExtractor:
             error_msg = f"Failed to load audio from {file_path}: {exc}"
             logging.error(error_msg)
             return
-        
+
         try:
             logging.info("Transcribing audio")
             transcription = self.model.transcribe(audio, fp16=False)
