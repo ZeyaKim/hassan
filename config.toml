@@ -1,2 +1,4 @@
 [whisper]
 model = "medium"
+[pysubs2]
+ext = "srt"
