@@ -1,5 +1,6 @@
 import logging
 import os
+import concurrent.futures
 
 import deepl
 import toml
@@ -8,6 +9,7 @@ import toml
 class Translator:
     def __init__(self):
         self.translator = None
+        self.api_key = None
 
     def load_api_key(self):
         logging.info("Loading DeepL API key")
@@ -34,46 +36,47 @@ class Translator:
         if self.is_valid_api_key(new_api_key):
             config = toml.load("keys.toml")
             config["api_key"]["deepl"] = new_api_key
-            self.translator = deepl.Translator(new_api_key)
+            self.api_key = new_api_key
             with open("keys.toml", "w") as f:
                 toml.dump(config, f)
                 logging.info(f"API key updated successfully to {new_api_key}")
         else:
             logging.error("Failed to update API key")
 
+    def translate_concurrent(self, sentence):
+        translated_text = self.translator.translate_text(sentence["text"], target_lang="KO")
+        sentence["text"] = translated_text
+        return sentence
+        
     def translate(self, file_path, transcription):
         logging.info(f"Starting translation for {file_path}")
 
         util_logger = logging.getLogger("util")
         util_logger.setLevel(logging.DEBUG)
+        
+        
+        if self.api_key is None:
+            self.api_key = self.load_api_key()    
+        if self.is_valid_api_key(self.api_key) and self.translator is None:
+            self.translator = deepl.Translator(self.api_key)
 
-        if self.is_valid_api_key(self.load_api_key()) and self.translator is None:
-            self.translator = deepl.Translator(self.load_api_key())
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         parent_folder_path = os.path.dirname(file_path)
 
         translated_transcription = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            translated_transcription = list(executor.map(
+                lambda sentence: self.translate_concurrent(sentence), transcription
+            ))
+                
         try:
             with open(
                 os.path.join(parent_folder_path, f"{file_name}_translated.txt"), "w"
             ) as f:
-                for sentence in transcription:
+                for sentence in translated_transcription:
                     try:
-                        translated_text = str(
-                            self.translator.translate_text(
-                                sentence["text"], target_lang="KO"
-                            )
-                        )
-
-                        translated_transcription.append(
-                            {
-                                "start": sentence["start"],
-                                "end": sentence["end"],
-                                "translated_text": translated_text,
-                            }
-                        )
                         f.write(
-                            f"{sentence['start']} ~ {sentence['end']}\n{translated_text}\n"
+                            f"{sentence['start']} ~ {sentence['end']}\n{sentence['text']}\n"
                         )
                     except Exception as exc:
                         logging.error(
