@@ -1,13 +1,14 @@
 import logging
 import os
 
+import toml
 import pysubs2
 
 
 class SubtitleGenerator:
     def __init__(self):
         self.subs_exts = ["srt", "ass"]
-        self.cur_ext = "ass"
+        self.ext = self.load_subtitle_ext()
 
     def create_event(self, sentence):
         start_second, start_ms = map(int, str(sentence["start"]).split("."))
@@ -20,6 +21,21 @@ class SubtitleGenerator:
             text=text,
         )
 
+    def load_subtitle_ext(self):
+        with open("config.toml", "r") as f:
+            config = toml.load(f)
+            subtitle_ext = config['pysubs2']['subtitle_ext']
+        return subtitle_ext
+
+    def edit_subtitle_ext(self, subtitle_ext):
+        if subtitle_ext in self.subs_exts:
+            with open("config.toml", "r") as f:
+                config = toml.load(f)
+            config['pysubs2']['subtitle_ext'] = subtitle_ext
+            with open("config.toml", "w") as f:
+                toml.dump(config, f)
+                self.ext = subtitle_ext
+
     def generate_subtitle(self, file_path, translated_transcription):
         logging.info(f"Starting subtitle generation for {file_path}")
         file_name = os.path.splitext(os.path.basename(file_path))[0]
@@ -31,7 +47,7 @@ class SubtitleGenerator:
             for sentence in translated_transcription:
                 subs.append(self.create_event(sentence))
 
-            subs_path = os.path.join(parent_folder_path, f"{file_name}.{self.cur_ext}")
+            subs_path = os.path.join(parent_folder_path, f"{file_name}.{self.ext}")
             subs.save(
                 subs_path,
                 encoding="utf-8",
