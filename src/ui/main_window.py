@@ -1,15 +1,10 @@
-import logging
-import os
-
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
-    QLabel,
-    QLineEdit,
+    QHBoxLayout,
     QMainWindow,
     QMenu,
-    QPlainTextEdit,
     QPushButton,
     QSystemTrayIcon,
     QVBoxLayout,
@@ -20,6 +15,7 @@ from src.audio_extractor import AudioExtractor
 from src.subtitle_generator import SubtitleGenerator
 from src.translator import Translator
 
+from .execute_setting_layout import ExecuteLayout
 from .path_table import PathTable
 
 
@@ -29,6 +25,10 @@ class MainWindow(QMainWindow):
         self.translator = Translator()
         self.audio_extractor = AudioExtractor()
         self.subtitle_generator = SubtitleGenerator()
+        self.setWindowIcon(QIcon("assets/icon/hassan_icon.png"))
+
+        self.selected_model = None
+        self.selected_ext = None
 
         self.init_ui()
 
@@ -38,35 +38,26 @@ class MainWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
+        path_button_layout = QHBoxLayout()
+
         self.add_file_paths_button = QPushButton("파일 추가", self)
         self.add_file_paths_button.clicked.connect(self.add_file_paths)
-        layout.addWidget(self.add_file_paths_button)
+        path_button_layout.addWidget(self.add_file_paths_button)
 
         self.add_folder_paths_button = QPushButton("폴더 추가", self)
         self.add_folder_paths_button.clicked.connect(self.add_folder_paths)
-        layout.addWidget(self.add_folder_paths_button)
+        path_button_layout.addWidget(self.add_folder_paths_button)
+
+        layout.addLayout(path_button_layout)
 
         self.path_table = PathTable()
         layout.addWidget(self.path_table)
 
-        self.api_key_label = QLabel()
-        self.init_api_key_label()
-        layout.addWidget(self.api_key_label)
+        execute_setting_layout = ExecuteLayout(
+            self.audio_extractor, self.translator, self.subtitle_generator
+        )
 
-        self.api_key_lineedit = QLineEdit(self)
-        layout.addWidget(self.api_key_lineedit)
-
-        self.api_key_edit_button = QPushButton("수정", self)
-        self.api_key_edit_button.clicked.connect(self.edit_api_key)
-        layout.addWidget(self.api_key_edit_button)
-
-        self.execute_button = QPushButton("번역", self)
-        self.execute_button.clicked.connect(self.execute)
-        layout.addWidget(self.execute_button)
-
-        self.progress_log_viewer = QPlainTextEdit(self)
-        self.progress_log_viewer.setReadOnly(True)
-        layout.addWidget(self.progress_log_viewer)
+        layout.addLayout(execute_setting_layout)
 
         container = QWidget()
         container.setLayout(layout)
@@ -89,15 +80,6 @@ class MainWindow(QMainWindow):
 
         self.path_table.add_new_path(selected_folder_path, path_type="folder")
 
-    def edit_api_key(self):
-        new_api_key = self.api_key_lineedit.text()
-        self.translator.edit_api_key(new_api_key)
-        self.api_key_label.setText(f"API Key: {self.translator.load_api_key()}")
-
-    def init_api_key_label(self):
-        api_key = self.translator.load_api_key()
-        self.api_key_label.setText(f"API Key: {api_key}")
-
     def create_tray_icon(self):
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon("assets/icon/hassan_icon.png"))
@@ -115,45 +97,10 @@ class MainWindow(QMainWindow):
         self.tray_icon.show()
 
     def closeEvent(self, event):
+        if QApplication.activeWindow() is not None:
+            # 애플리케이션이 활성 상태일 때만 메시지를 출력
+            self.tray_icon.showMessage(
+                "Work Hard Hassan!", "하산이 야근하고 있습니다!", QSystemTrayIcon.Information, 2000
+            )
         event.ignore()
         self.hide()
-
-        self.tray_icon.showMessage(
-            "Work Hard Hassan!", "하산이 야근하고 있습니다!", QSystemTrayIcon.Information, 2000
-        )
-
-    def execute(self):
-        refined_paths = self.path_table.get_removed_redudant_paths()
-        for path in refined_paths:
-            if path["type"] == "folder":
-                self.execute_folder(path["path"])
-            elif path["type"] == "file":
-                self.execute_file(path["path"])
-        self.path_table.setRowCount(0)
-
-    def execute_folder(self, folder_path):
-        logging.info(f"Executing {folder_path}")
-        listdir = os.listdir(folder_path)
-
-        audio_files = [
-            path for path in listdir if os.path.isfile(os.path.join(folder_path, path)) and path.split(".")[-1] in ["mp3", "wav"]
-        ]
-    
-        folders = [
-            path for path in listdir if os.path.isdir(os.path.join(folder_path, path))
-        ]
-
-        for audio_file in audio_files:
-            self.execute_file(os.path.join(folder_path, audio_file))
-
-        for folder in folders:
-            self.execute_folder(os.path.join(folder_path, folder))
-
-    def execute_file(self, file_path):
-        logging.info(f"Executing {file_path}")
-        extracted_transcription = self.audio_extractor.extract_transcription(file_path)
-        translated_transcription = self.translator.translate(
-            file_path, extracted_transcription
-        )
-        self.subtitle_generator.generate_subtitle(file_path, translated_transcription)
-        logging.info(f"Finished {file_path}")
