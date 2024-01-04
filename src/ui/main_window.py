@@ -15,7 +15,7 @@ from src.audio_extractor import AudioExtractor
 from src.subtitle_generator import SubtitleGenerator
 from src.translator import Translator
 
-from .execute_setting_layout import ExecuteLayout
+from .execute_layout import ExecuteLayout
 from .path_table import PathTable
 
 
@@ -26,9 +26,6 @@ class MainWindow(QMainWindow):
         self.audio_extractor = AudioExtractor()
         self.subtitle_generator = SubtitleGenerator()
         self.setWindowIcon(QIcon("assets/icon/hassan_icon.png"))
-
-        self.selected_model = None
-        self.selected_ext = None
 
         self.init_ui()
 
