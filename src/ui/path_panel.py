@@ -1,6 +1,6 @@
 import logging
 
-from PySide6.QtCore import Qt, Slot, QString, QStringList
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -34,8 +34,8 @@ class PathPanel(QVBoxLayout):
         add_folder_path_button = QPushButton("폴더 추가")
         add_folder_path_button.clicked.connect(self.add_folder_path)
 
-        buttons_layout.addWidget(self.add_file_paths_button)
-        buttons_layout.addWidget(self.add_folder_path_button)
+        buttons_layout.addWidget(add_file_paths_button)
+        buttons_layout.addWidget(add_folder_path_button)
 
         self.addLayout(buttons_layout)
 
@@ -48,10 +48,10 @@ class PathPanel(QVBoxLayout):
         path_viewer.setContextMenuPolicy(Qt.CustomContextMenu)
         path_viewer.customContextMenuRequested.connect(self.show_delete_menu)
 
-        header = self.horizontalHeader()
+        header = path_viewer.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Fixed)
-        self.setColumnWidth(1, 100)
+        path_viewer.setColumnWidth(1, 100)
 
         self.addWidget(path_viewer)
 
@@ -101,13 +101,13 @@ class PathPanel(QVBoxLayout):
     @Slot()
     def add_file_paths(self) -> None:
         with QFileDialog(self) as file_dialog:
-            file_paths: QStringList = file_dialog.getOpenFileNames(self, "Select Audio Files", "", "Audio Files (*.mp3 *.wav)")
+            file_paths = file_dialog.getOpenFileNames(self, "Select Audio Files", "", "Audio Files (*.mp3 *.wav)")
             
             for file_path in file_paths[0]:
                 self.add_path_item(file_path, "file")
 
     @Slot()
-    def add_folder_paths(self) -> None:
+    def add_folder_path(self) -> None:
         with QFileDialog(self) as folder_dialog:
             selected_folder_path = folder_dialog.getExistingDirectory(self, "Select Folder")
 
