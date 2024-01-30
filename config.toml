@@ -1,0 +1,8 @@
+[audio_extractor]
+    [audio_extractor.whisper]
+        model = "medium"
+        device = "cpu"
+
+[translator]
+    [translator.deepl]
+        api_key = ""

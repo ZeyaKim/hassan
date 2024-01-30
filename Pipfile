@@ -6,6 +6,7 @@ name = "pip_conf_index_global"
 [packages]
 pyside6 = "*"
 dependency-injector = "*"
+toml = "*"
 
 [dev-packages]
 mypy = "*"
