@@ -62,9 +62,6 @@ def main(
     app = QApplication(sys.argv)
 
     window = MainWindow(logger, root_dir)
-    window.setWindowTitle("PySide6 Example")
-    window.setGeometry(100, 100, 800, 600)
-
     window.show()
 
     sys.exit(app.exec())
