@@ -6,3 +6,5 @@
 [translator]
     [translator.deepl]
         api_key = ""
+
+root_dir = ""

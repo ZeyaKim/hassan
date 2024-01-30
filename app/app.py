@@ -46,9 +46,8 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     
     config_toml = toml.load(os.path.join(root_dir, "config.toml"))
-    config_toml.update({'root_dir': root_dir})
+    config_toml["root_dir"] = root_dir
     config.from_dict(config_toml)
-    print(config_toml)
 
     logger = providers.Singleton(init_logger)
 
