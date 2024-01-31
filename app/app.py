@@ -3,9 +3,9 @@ import os
 import sys
 from logging.handlers import RotatingFileHandler
 
+import toml
 from dependency_injector import containers, providers
 from dependency_injector.wiring import Provide, inject
-import toml
 from PySide6.QtWidgets import QApplication
 from widgets.main_window import MainWindow
 
@@ -44,7 +44,7 @@ def init_logger():
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
-    
+
     config_toml = toml.load(os.path.join(root_dir, "config.toml"))
     config_toml["root_dir"] = root_dir
     config.from_dict(config_toml)
