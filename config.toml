@@ -6,5 +6,7 @@
 [translator]
     [translator.deepl]
         api_key = ""
+        target_lang = "KO"
 
-root_dir = ""
+[subtitle_generator]
+    ext = "srt"
