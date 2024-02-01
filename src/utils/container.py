@@ -1,12 +1,13 @@
 from dependency_injector import containers, providers
 from PySide6.QtWidgets import QApplication
 
+from services import audio_extractor, subtitle_generator, translator
+from services.task_runner import TaskRunner
 from utils import utils
 from widgets.main_window import MainWindow
 from widgets.path_panel import PathPanel
 from widgets.settings_panel import SettingsPanel
 from widgets.task_runner_panel import TaskRunnerPanel
-from services.task_runner import TaskRunner
 
 
 class Container(containers.DeclarativeContainer):
@@ -20,9 +21,13 @@ class Container(containers.DeclarativeContainer):
 
     # service
 
-    audio_extractor = providers.Singleton(utils.AudioExtractor, logger, root_dir)
-    translator = providers.Singleton(utils.Translator, logger, root_dir)
-    subtitle_generator = providers.Singleton(utils.SubtitleGenerator, logger, root_dir)
+    audio_extractor = providers.Singleton(
+        audio_extractor.AudioExtractor, logger, root_dir
+    )
+    translator = providers.Singleton(translator.Translator, logger, root_dir)
+    subtitle_generator = providers.Singleton(
+        subtitle_generator.SubtitleGenerator, logger, root_dir
+    )
     task_runner = providers.Singleton(
         TaskRunner,
         logger,
