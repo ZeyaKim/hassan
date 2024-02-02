@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
+    QMenu,
 )
 from PySide6.QtCore import Qt
 
@@ -67,6 +68,9 @@ class PathPanel(QWidget):
 
         path_viewer.setColumnWidth(2, 100)  # 세 번째 열의 너비
 
+        path_viewer.setContextMenuPolicy(Qt.CustomContextMenu)
+        path_viewer.customContextMenuRequested.connect(self.show_delete_menu)
+
         return path_viewer
 
     def add_file_paths(self):
@@ -108,4 +112,15 @@ class PathPanel(QWidget):
         )
 
     def show_delete_menu(self, pos):
-        pass
+        menu = QMenu(self)
+        delete_action = menu.addAction("Delete")
+        
+        action = menu.exec_(self.path_viewer.mapToGlobal(pos))
+        
+        if action == delete_action:
+            selected_row = self.path_viewer.currentRow()
+            deleted_path = self.path_viewer.item(selected_row, 1).text()
+            
+            self.path_viewer.removeRow(selected_row)
+            
+            self.logger.info(f"Path {deleted_path} is deleted")
