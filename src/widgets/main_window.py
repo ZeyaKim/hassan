@@ -31,7 +31,11 @@ class MainWindow(QMainWindow):
         self.logger = logger
         self.root_dir = root_dir
 
-        self.logger.debug("Initializing main window")
+        self.logger.info("Initializing main window")
+
+        self.path_panel = path_panel
+        self.settings_panel = settings_panel
+        self.task_runner_panel = task_runner_panel
 
         self.init_ui()
 
@@ -39,18 +43,17 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("Hassan")
-        self.resize(800, 600)
+        self.resize(1080, 720)
 
         main_layout = QVBoxLayout()
 
-        path_panel = PathPanel(self.logger, self.root_dir)
+        path_panel = self.path_panel
         main_layout.addWidget(path_panel)
 
-        settings_panel = SettingsPanel(self.logger, self.root_dir)
+        settings_panel = self.settings_panel
         main_layout.addWidget(settings_panel)
 
-        task_runner_panel = TaskRunnerPanel(self.logger, self.root_dir)
-        main_layout.addWidget(task_runner_panel)
+        main_layout.addWidget(self.task_runner_panel)
 
         h_layout = QHBoxLayout()
 
