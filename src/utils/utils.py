@@ -32,7 +32,9 @@ def init_logger(root_dir: str):
     console_handler.setLevel(logging.DEBUG)
 
     file_handler = RotatingFileHandler(
-        os.path.join(log_dir, "hassan.log"), maxBytes=1024 * 1024, backupCount=2
+        os.path.join(log_dir, "hassan.log"),
+        encoding="utf-8",
+        maxBytes=1024 * 1024, backupCount=2
     )
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.INFO)
@@ -40,7 +42,7 @@ def init_logger(root_dir: str):
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
 
-    logger.debug("Logger initialized")
+    logger.info("Logger initialized")
 
     return logger
 
