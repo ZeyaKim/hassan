@@ -1,56 +1,96 @@
+import logging
+
 from dependency_injector import containers, providers
 from PySide6.QtWidgets import QApplication
 
-from services import audio_extractor, subtitle_generator, translator
-from services.task_runner import TaskRunner
-from utils import utils
-from widgets.main_window import MainWindow
-from widgets.path_panel import PathPanel
-from widgets.settings_panel import SettingsPanel
-from widgets.task_runner_panel import TaskRunnerPanel
+from src.services import audio_extractor, subtitle_generator, task_runner, translator
+from src.utils import config_manager, utils
+from src.widgets.main_window import MainWindow
+from src.widgets.path_panel import PathPanel
+from src.widgets.settings_panel import SettingsPanel
+from src.widgets.task_runner_panel import TaskRunnerPanel
 
 
 class Container(containers.DeclarativeContainer):
-    root_dir = providers.Callable(utils.get_root_dir)
+    """
+    Container class for managing dependencies and providing instances of various services and UI components.
+    """
 
-    config = providers.Configuration()
+    root_dir_provider: providers.Provider[str] = providers.Singleton(utils.get_root_dir)
 
-    logger = providers.Singleton(utils.init_logger, root_dir)
-
-    # model
-
-    # service
-
-    audio_extractor = providers.Singleton(
-        audio_extractor.AudioExtractor, logger, root_dir
+    logger_provider: providers.Provider[logging.Logger] = providers.Singleton(
+        utils.init_logger, root_dir_provider
     )
-    translator = providers.Singleton(translator.Translator, logger, root_dir)
-    subtitle_generator = providers.Singleton(
-        subtitle_generator.SubtitleGenerator, logger, root_dir
+
+    config_manager_provider: providers.Provider[config_manager.ConfigManager] = (
+        providers.Factory(
+            config_manager.ConfigManager, logger_provider, root_dir_provider
+        )
     )
-    task_runner = providers.Singleton(
-        TaskRunner,
-        logger,
-        root_dir,
-        audio_extractor,
-        translator,
-        subtitle_generator,
+
+    config_provider: providers.Configuration = providers.Configuration()
+
+    # services
+    audio_extractor_provider: providers.Provider[audio_extractor.AudioExtractor] = (
+        providers.Singleton(
+            audio_extractor.AudioExtractor,
+            logger_provider,
+            root_dir_provider,
+            config_manager_provider,
+            config_provider,
+        )
+    )
+    translator_provider: providers.Provider[translator.Translator] = (
+        providers.Singleton(
+            translator.Translator,
+            logger_provider,
+            root_dir_provider,
+            config_manager_provider,
+            config_provider,
+        )
+    )
+
+    subtitle_generator_provider: providers.Provider[
+        subtitle_generator.SubtitleGenerator
+    ] = providers.Singleton(
+        subtitle_generator.SubtitleGenerator,
+        logger_provider,
+        root_dir_provider,
+        config_manager_provider,
+        config_provider,
+    )
+
+    task_runner_provider: providers.Provider[task_runner.TaskRunner] = (
+        providers.Singleton(
+            task_runner.TaskRunner,
+            logger_provider,
+            root_dir_provider,
+            audio_extractor_provider,
+            translator_provider,
+            subtitle_generator_provider,
+        )
     )
 
     # ui
-    app = providers.Singleton(QApplication)
+    app_provider: providers.Provider[QApplication] = providers.Singleton(QApplication)
 
-    path_panel = providers.Factory(PathPanel, logger, root_dir)
-    settings_panel = providers.Factory(SettingsPanel, logger, root_dir)
-    task_runner_panel = providers.Factory(
-        TaskRunnerPanel, logger, root_dir, task_runner
+    path_view_provider: providers.Provider[PathPanel] = providers.Singleton(PathPanel)
+
+    path_panel_provider: providers.Provider[PathPanel] = providers.Factory(
+        PathPanel, logger_provider, root_dir_provider
+    )
+    settings_panel_provider: providers.Provider[SettingsPanel] = providers.Factory(
+        SettingsPanel, logger_provider, root_dir_provider, config_provider
+    )
+    task_runner_panel_provider: providers.Provider[TaskRunnerPanel] = providers.Factory(
+        TaskRunnerPanel, logger_provider, root_dir_provider, task_runner_provider
     )
 
-    main_window = providers.Factory(
+    main_window_provider: providers.Provider[MainWindow] = providers.Factory(
         MainWindow,
-        logger,
-        root_dir,
-        path_panel,
-        settings_panel,
-        task_runner_panel,
+        logger_provider,
+        root_dir_provider,
+        path_panel_provider,
+        settings_panel_provider,
+        task_runner_panel_provider,
     )
