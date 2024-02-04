@@ -1,16 +1,18 @@
 import logging
 
+from dependency_injector import providers
 from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
 
 
 class SettingsPanel(QWidget):
-    def __init__(self, logger: logging.Logger, root_dir: str):
+    def __init__(
+        self, logger: logging.Logger, root_dir: str, config: providers.Configuration
+    ):
         super().__init__()
 
         self.logger = logger
         self.root_dir = root_dir
-
-        self.logger.debug("Initializing settings panel")
+        self.config = config
 
         self.init_ui()
 
