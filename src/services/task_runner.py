@@ -1,5 +1,7 @@
-from PySide6.QtCore import QObject, Signal
 import time
+
+from PySide6.QtCore import QObject, Signal
+
 
 class TaskRunner(QObject):
     progress = Signal(int)

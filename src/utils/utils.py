@@ -6,8 +6,6 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-import toml
-
 
 def get_root_dir():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +32,8 @@ def init_logger(root_dir: str):
     file_handler = RotatingFileHandler(
         os.path.join(log_dir, "hassan.log"),
         encoding="utf-8",
-        maxBytes=1024 * 1024, backupCount=2
+        maxBytes=1024 * 1024,
+        backupCount=2,
     )
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.INFO)
@@ -45,10 +44,3 @@ def init_logger(root_dir: str):
     logger.info("Logger initialized")
 
     return logger
-
-
-def load_config(root_dir: str):
-    config_path = os.path.join(root_dir, "config.toml")
-    with open(config_path, "r") as f:
-        config = toml.load(f)
-    return config

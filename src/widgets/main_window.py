@@ -12,9 +12,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from widgets.path_panel import PathPanel
-from widgets.settings_panel import SettingsPanel
-from widgets.task_runner_panel import TaskRunnerPanel
+from src.widgets.path_panel import PathPanel
+from src.widgets.settings_panel import SettingsPanel
+from src.widgets.task_runner_panel import TaskRunnerPanel
 
 
 class MainWindow(QMainWindow):
