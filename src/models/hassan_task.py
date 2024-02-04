@@ -1,7 +1,7 @@
 import logging
 import os
 
-from PySide6.QtCore import QStandardItemModel
+from PySide6.QtGui import QStandardItemModel
 
 
 class HassanTask(QStandardItemModel):
@@ -9,18 +9,16 @@ class HassanTask(QStandardItemModel):
         self,
         logger: logging.Logger,
         root_dir: str,
-        audio_path: str,
         audio_extractor,
         translator,
         subtitle_generator,
+        file_path: str,
+        settings: dict,
     ):
         super().__init__()
-        self.path = audio_path
-        self.parent_dir = os.path.dirname(audio_path)
+        self.logger = logger
+        self.file_path = file_path
+        self.parent_dir = os.path.dirname(file_path)
 
-    def __dict__(self):
-        pass
-
-    # TODO: 작업을 시작한다. (실제로는 쓰레드를 생성하고, 쓰레드에서 작업을 시작한다.)
-    def run(self):
-        pass
+    def execute(self):
+        self.logger.debug(f"execute: {self.file_path}")
