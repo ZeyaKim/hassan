@@ -8,12 +8,15 @@ pyside6 = "*"
 dependency-injector = "*"
 toml = "*"
 deepl = "*"
+whisper = "*"
+pysubs2 = "*"
 
 [dev-packages]
 mypy = "*"
 isort = "*"
 black = "*"
 types-toml = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.11"
