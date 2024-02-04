@@ -13,6 +13,7 @@ deepl = "*"
 mypy = "*"
 isort = "*"
 black = "*"
+types-toml = "*"
 
 [requires]
 python_version = "3.11"
