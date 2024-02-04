@@ -1,28 +1,25 @@
 import logging
 
 from PySide6.QtWidgets import (
-    QFileDialog,
     QGroupBox,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
-    QMenu,
 )
-from PySide6.QtCore import Qt
 
-from utils import enums
+from src.widgets import path_viewer
 
 
 class PathPanel(QWidget):
-    def __init__(self, logger: logging.Logger, root_dir: str):
+    def __init__(
+        self, logger: logging.Logger, root_dir: str, path_viewer: path_viewer.PathViewer
+    ):
         super().__init__()
         self.logger = logger
         self.root_dir = root_dir
+        self.path_viewer = path_viewer
 
         self.init_ui()
 
@@ -45,7 +42,6 @@ class PathPanel(QWidget):
         h_layout.addWidget(path_adder_group)
 
         path_viewer_label = QLabel("Paths")
-        self.path_viewer = self.init_path_viewer()
 
         path_viewer_layout = QVBoxLayout()
 
@@ -55,72 +51,3 @@ class PathPanel(QWidget):
         h_layout.addLayout(path_viewer_layout)
 
         self.setLayout(h_layout)
-
-    def init_path_viewer(self):
-        path_viewer = QTableWidget()
-        path_viewer.setColumnCount(3)
-        path_viewer.setHorizontalHeaderLabels(["Name", "Path", "Type"])
-
-        path_viewer.setColumnWidth(0, 300)  # 첫 번째 열의 너비
-
-        header = path_viewer.horizontalHeader()
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
-
-        path_viewer.setColumnWidth(2, 100)  # 세 번째 열의 너비
-
-        path_viewer.setContextMenuPolicy(Qt.CustomContextMenu)
-        path_viewer.customContextMenuRequested.connect(self.show_delete_menu)
-
-        return path_viewer
-
-    def add_file_paths(self):
-        available_exts = ["*" + ext.value for ext in enums.ExtractableExtEnum]
-        file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "Select Audio Files", filter=f"Audio Files ({' '.join(available_exts)})"
-        )
-
-        if file_paths:
-            for file_path in file_paths:
-                self.add_path_item(file_path, "File")
-
-    def add_folder_paths(self):
-        folder_path = QFileDialog.getExistingDirectory(self, "Select Folder")
-        if folder_path:
-            self.add_path_item(folder_path, "Folder")
-
-    def add_path_item(self, path, path_type):
-        if self.is_path_exist(path):
-            self.logger.info(f"{path} is already exist")
-            return
-
-        row = self.path_viewer.rowCount()
-        self.path_viewer.insertRow(row)
-
-        name = path.split("/")[-1]
-        row_info = [name, path, path_type]
-
-        for idx, info in enumerate(row_info):
-            item = QTableWidgetItem(info)
-            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-            self.path_viewer.setItem(row, idx, item)
-        self.logger.info(f"Added {path}")
-
-    def is_path_exist(self, path):
-        return any(
-            self.path_viewer.item(row, 1).text() == path
-            for row in range(self.path_viewer.rowCount())
-        )
-
-    def show_delete_menu(self, pos):
-        menu = QMenu(self)
-        delete_action = menu.addAction("Delete")
-        
-        action = menu.exec_(self.path_viewer.mapToGlobal(pos))
-        
-        if action == delete_action:
-            selected_row = self.path_viewer.currentRow()
-            deleted_path = self.path_viewer.item(selected_row, 1).text()
-            
-            self.path_viewer.removeRow(selected_row)
-            
-            self.logger.info(f"Path {deleted_path} is deleted")
