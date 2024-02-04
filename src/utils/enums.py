@@ -2,14 +2,22 @@ from enum import Enum
 
 
 class SubtitleExtEnum(Enum):
-    SRT = "srt"
-    ASS = "ass"
+    """Enum class for subtitle file extensions."""
+
+    SRT = ".srt"
+    ASS = ".ass"
+
 
 class ExtractableExtEnum(Enum):
-    MP3 = "mp3"
-    WAV = "wav"
+    """Enum class for extractable file extensions."""
+
+    MP3 = ".mp3"
+    WAV = ".wav"
+
 
 class WhisperModelEnum(Enum):
+    """Enum class for whisper model sizes."""
+
     SMALL = "small"
-    Medium = "medium"
-    Large = "large"
+    MEDIUM = "medium"
+    LARGE = "large"
