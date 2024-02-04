@@ -7,6 +7,7 @@ from src.services import audio_extractor, subtitle_generator, task_runner, trans
 from src.utils import config_manager, utils
 from src.widgets.main_window import MainWindow
 from src.widgets.path_panel import PathPanel
+from src.widgets.path_viewer import PathViewer
 from src.widgets.settings_panel import SettingsPanel
 from src.widgets.task_runner_panel import TaskRunnerPanel
 
@@ -23,12 +24,16 @@ class Container(containers.DeclarativeContainer):
     )
 
     config_manager_provider: providers.Provider[config_manager.ConfigManager] = (
-        providers.Factory(
+        providers.Singleton(
             config_manager.ConfigManager, logger_provider, root_dir_provider
         )
     )
 
     config_provider: providers.Configuration = providers.Configuration()
+
+    path_viewer_provider: providers.Provider[PathViewer] = providers.Singleton(
+        PathViewer, logger_provider
+    )
 
     # services
     audio_extractor_provider: providers.Provider[audio_extractor.AudioExtractor] = (
@@ -68,16 +73,15 @@ class Container(containers.DeclarativeContainer):
             audio_extractor_provider,
             translator_provider,
             subtitle_generator_provider,
+            path_viewer_provider,
+            config_provider,
         )
     )
 
-    # ui
     app_provider: providers.Provider[QApplication] = providers.Singleton(QApplication)
 
-    path_view_provider: providers.Provider[PathPanel] = providers.Singleton(PathPanel)
-
     path_panel_provider: providers.Provider[PathPanel] = providers.Factory(
-        PathPanel, logger_provider, root_dir_provider
+        PathPanel, logger_provider, root_dir_provider, path_viewer_provider
     )
     settings_panel_provider: providers.Provider[SettingsPanel] = providers.Factory(
         SettingsPanel, logger_provider, root_dir_provider, config_provider
