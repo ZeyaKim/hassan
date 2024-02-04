@@ -1,5 +1,5 @@
-from PySide6.QtCore import QObject, QThread, Signal, Slot
-
+from PySide6.QtCore import QObject, Signal
+import time
 
 class TaskRunner(QObject):
     progress = Signal(int)
@@ -15,9 +15,8 @@ class TaskRunner(QObject):
         self.translator = translator
         self.subtitle_generator = subtitle_generator
 
-    @Slot()
     def run(self):
         for i in range(100):
             self.progress.emit(i)
-            QThread.msleep(100)
+            time.sleep(0.1)
         self.finished.emit()
