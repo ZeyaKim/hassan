@@ -32,11 +32,11 @@ class PathPanel(QWidget):
         path_adder_group.setLayout(path_adder_layout)
 
         button_1 = QPushButton("Add Files")
-        button_1.clicked.connect(self.add_file_paths)
+        button_1.clicked.connect(self.path_viewer.add_file_paths)
         path_adder_layout.addWidget(button_1)
 
         button_2 = QPushButton("Add Folder")
-        button_2.clicked.connect(self.add_folder_paths)
+        button_2.clicked.connect(self.path_viewer.add_folder_paths)
         path_adder_layout.addWidget(button_2)
 
         h_layout.addWidget(path_adder_group)
