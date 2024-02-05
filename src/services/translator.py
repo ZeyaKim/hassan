@@ -14,3 +14,10 @@ class Translator:
     # TODO: api 키를 검증하는 로직을 구현해야 합니다.
     def is_valid_api_key(self, api_key: str) -> bool:
         return True
+
+    def translate_description(self, name: str, description: list) -> dict:
+        self.logger.info(f"Translating description for {name}")
+        
+        # TODO: Implement translation
+        
+        self.logger.info(f"{name} has been translated successfully.")
