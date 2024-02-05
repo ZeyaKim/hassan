@@ -1,11 +1,19 @@
+import logging
 
-from src.utils.enums import WhisperModelEnum, WhisperDeviceEnum
+from src.utils import config_manager
+from src.utils.enums import WhisperDeviceEnum, WhisperModelEnum
 
 
 class AudioExtractor:
     """Class for audio extractor service."""
 
-    def __init__(self, logger, root_dir, config_manager, config):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        root_dir: str,
+        config_manager: config_manager.ConfigManager,
+        config: dict,
+    ):
         self.logger = logger
         self.root_dir = root_dir
         self.config_manager = config_manager
@@ -21,15 +29,18 @@ class AudioExtractor:
     def change_whisper_device(self, whisper_device_enum: WhisperDeviceEnum) -> None:
         self.config["audio_extractor"]["device"] = whisper_device_enum.value
         self.config_manager.save_config(self.config)
-        self.logger.info(f"Whisper device has been changed to {whisper_device_enum.value}")
+        self.logger.info(
+            f"Whisper device has been changed to {whisper_device_enum.value}"
+        )
 
-    def extract_audio(self, path: str, name: str) -> None:
-        self.logger.info(f"Extracting audio from {name}")
-        
-        description = []
-        
+    def extract_audio(
+        self, file_path: str, parent_dir: str, name: str, execution_settings: dict
+    ) -> list:
+
+        description: list = []
+
         # TODO: Implement audio extraction
-        
+
         self.logger.info(f"{name} has been extracted successfully.")
-        
+
         return description
