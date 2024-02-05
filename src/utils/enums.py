@@ -22,8 +22,9 @@ class WhisperModelEnum(Enum):
     MEDIUM = "medium"
     LARGE = "large"
 
+
 class WhisperDeviceEnum(Enum):
-    """Enum class for whisper devices """
-    
+    """Enum class for whisper devices"""
+
     CPU = "cpu"
     CUDA = "cuda"

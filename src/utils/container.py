@@ -84,7 +84,13 @@ class Container(containers.DeclarativeContainer):
         PathPanel, logger_provider, root_dir_provider, path_viewer_provider
     )
     settings_panel_provider: providers.Provider[SettingsPanel] = providers.Factory(
-        SettingsPanel, logger_provider, root_dir_provider, config_provider
+        SettingsPanel,
+        logger_provider,
+        root_dir_provider,
+        audio_extractor_provider,
+        translator_provider,
+        subtitle_generator_provider,
+        config_provider,
     )
     task_runner_panel_provider: providers.Provider[TaskRunnerPanel] = providers.Factory(
         TaskRunnerPanel, logger_provider, root_dir_provider, task_runner_provider

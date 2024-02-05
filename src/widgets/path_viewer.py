@@ -1,5 +1,5 @@
-
 import os
+import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
 )
 
 from src.utils import enums
-
 
 class PathViewer(QTableWidget):
     """
@@ -33,7 +32,7 @@ class PathViewer(QTableWidget):
         remove_path_in_map: Removes a path from the path_info dictionary.
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger: logging.Logger):
         super().__init__()
         self.init_ui()
         self.logger = logger
@@ -116,7 +115,7 @@ class PathViewer(QTableWidget):
         self.insertRow(row)
 
         path = os.path.normpath(path)
-        name = path.split("/")[-1]
+        name = os.path.basename(path)
         row_info = [name, path, path_type]
 
         for idx, info in enumerate(row_info):
@@ -166,3 +165,7 @@ class PathViewer(QTableWidget):
             path: The path to be removed.
         """
         self.path_info.pop(path)
+        
+    def on_finished(self):
+        self.setRowCount(0)
+        self.path_info.clear()

@@ -64,12 +64,14 @@ class TaskRunnerPanel(QWidget):
         self.task_runner.progress.connect(self.on_task_progress)
 
     def run_tasks(self):
+        self.logger.info("Running tasks")
         self.run_button.setEnabled(False)
         self.thread.start()
 
-    def on_task_progress(self, value):
+    def on_task_progress(self, value: int):
         self.progress_bar.setValue(value)
 
     def on_tasks_finished(self):
+        self.logger.info("Tasks finished")
         self.run_button.setEnabled(True)
         self.progress_bar.setValue(0)

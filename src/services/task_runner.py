@@ -98,5 +98,6 @@ class TaskRunner(QObject):
         self.unique_tasks_paths.add(file_path)
 
     def on_finished(self):
+        self.path_viewer.on_finished()
         self.unique_tasks_paths.clear()
         self.pending_tasks.clear()
