@@ -7,4 +7,4 @@
     target_lang = "KO"
 
 [subtitle_generator]
-    ext = "srt"
+    ext = ".srt"
