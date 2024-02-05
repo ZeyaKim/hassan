@@ -3,6 +3,8 @@ import logging
 from dependency_injector import providers
 from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QComboBox
 
+from src.utils.enums import WhisperModelEnum
+
 
 class SettingsPanel(QWidget):
     def __init__(
@@ -77,6 +79,17 @@ class SettingsPanel(QWidget):
 
         return audio_extractor_group_box
 
+    def init_whisper_model_combobox(self):
+        models = [model.value for model in WhisperModelEnum]
+        current_model = self.config["audio_extractor"]["whisper_model"]
+        for idx, model in enumerate(models):
+            self.whisper_model_comgo_box.addItem(model)
+            if model == current_model:
+                self.whisper_model_comgo_box.setCurrentText(current_model)
+
+    def init_whisper_device_combobox(self):
+        pass
+
     def init_subtitle_generator_settings_ui(self):
         subtitle_generator_group_box = QGroupBox("Subtitle Generator")
         subtitle_generator_layout = QVBoxLayout()
@@ -93,3 +106,6 @@ class SettingsPanel(QWidget):
         subtitle_generator_group_box.setLayout(subtitle_generator_layout)
 
         return subtitle_generator_group_box
+
+    def init_subtitle_ext_combobox(self):
+        pass
