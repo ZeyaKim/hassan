@@ -1,6 +1,5 @@
-from dependency_injector import providers
 
-from src.utils.enums import WhisperModelEnum
+from src.utils.enums import WhisperModelEnum, WhisperDeviceEnum
 
 
 class AudioExtractor:
@@ -13,20 +12,24 @@ class AudioExtractor:
         self.config = config
 
     def change_whisper_model(self, whisper_model_enum: WhisperModelEnum) -> None:
-        """
-        Change the whisper model in the configuration file.
-
-        Args:
-            subtitle_ext_enum (WhisperModelEnum): The new whisper model.
-        """
-        config_map = self.config_manager.load_config()
-        config_map["audio_extractor"]["whisper_model"] = whisper_model_enum.value
-
-        config_provider = providers.Configuration()
-        config_provider.from_dict(config_map)
-        self.config.override(config_provider)
-
-        self.config_manager.save_config(config_map)
+        self.config["audio_extractor"]["whisper_model"] = whisper_model_enum.value
+        self.config_manager.save_config(self.config)
         self.logger.info(
             f"Whisper model has been changed to {whisper_model_enum.value}"
         )
+
+    def change_whisper_device(self, whisper_device_enum: WhisperDeviceEnum) -> None:
+        self.config["audio_extractor"]["device"] = whisper_device_enum.value
+        self.config_manager.save_config(self.config)
+        self.logger.info(f"Whisper device has been changed to {whisper_device_enum.value}")
+
+    def extract_audio(self, path: str, name: str) -> None:
+        self.logger.info(f"Extracting audio from {name}")
+        
+        description = []
+        
+        # TODO: Implement audio extraction
+        
+        self.logger.info(f"{name} has been extracted successfully.")
+        
+        return description
