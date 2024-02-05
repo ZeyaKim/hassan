@@ -15,9 +15,19 @@ class Translator:
     def is_valid_api_key(self, api_key: str) -> bool:
         return True
 
-    def translate_description(self, name: str, description: list) -> dict:
-        self.logger.info(f"Translating description for {name}")
-        
+    def translate_transcription(
+        self,
+        file_path,
+        parent_dir,
+        name: str,
+        execution_settings: dict,
+        description: list,
+    ) -> dict:
+
         # TODO: Implement translation
-        
+
+        translated_description: dict = {}
+
         self.logger.info(f"{name} has been translated successfully.")
+
+        return translated_description
