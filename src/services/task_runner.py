@@ -64,7 +64,7 @@ class TaskRunner(QObject):
                 "target_lang": self.config["translator"]["target_lang"],
             },
             "subtitle_generator": {
-                "ext": self.config["subtitle_generator"]["ext"],
+                "subtitle_ext": self.config["subtitle_generator"]["subtitle_ext"],
             },
         }
 
