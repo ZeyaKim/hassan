@@ -1,7 +1,7 @@
 import logging
 
 from dependency_injector import providers
-from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGroupBox, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QComboBox
 
 
 class SettingsPanel(QWidget):
@@ -39,9 +39,7 @@ class SettingsPanel(QWidget):
 
         h_layout.addWidget(audio_extractor_group_box)
 
-        subtitle_generator_group_box = QGroupBox("Subtitle Generator")
-        subtitle_generator_layout = QVBoxLayout()
-        subtitle_generator_group_box.setLayout(subtitle_generator_layout)
+        subtitle_generator_group_box = self.init_subtitle_generator_settings_ui()
 
         h_layout.addWidget(subtitle_generator_group_box)
 
@@ -59,6 +57,22 @@ class SettingsPanel(QWidget):
     def init_audio_extractor_settings_ui(self):
         audio_extractor_group_box = QGroupBox("Audio Extractor")
         audio_extractor_layout = QVBoxLayout()
+        
+        h_layout = QHBoxLayout()
+
+        whisper_model_label = QLabel("Whisper Model")
+        h_layout.addWidget(whisper_model_label)
+        
+        whisper_model_comgo_box = QComboBox()
+        h_layout.addWidget(whisper_model_comgo_box)
+        
+        whisper_devide_label = QLabel("Device")
+        h_layout.addWidget(whisper_devide_label)
+        
+        whisper_device_comgo_box = QComboBox()
+        h_layout.addWidget(whisper_device_comgo_box)
+
+        audio_extractor_layout.addLayout(h_layout)        
         audio_extractor_group_box.setLayout(audio_extractor_layout)
 
         return audio_extractor_group_box
@@ -66,6 +80,16 @@ class SettingsPanel(QWidget):
     def init_subtitle_generator_settings_ui(self):
         subtitle_generator_group_box = QGroupBox("Subtitle Generator")
         subtitle_generator_layout = QVBoxLayout()
+        
+        h_layout = QHBoxLayout()
+        
+        subtitle_ext_label = QLabel("Extension")
+        h_layout.addWidget(subtitle_ext_label)
+        
+        subtitle_ext_comgo_box = QComboBox()
+        h_layout.addWidget(subtitle_ext_comgo_box)
+        
+        subtitle_generator_layout.addLayout(h_layout)
         subtitle_generator_group_box.setLayout(subtitle_generator_layout)
 
         return subtitle_generator_group_box
