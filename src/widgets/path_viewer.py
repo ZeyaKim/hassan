@@ -49,11 +49,11 @@ class PathViewer(QTableWidget):
         self.setColumnWidth(0, 300)
 
         header = self.horizontalHeader()
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
         self.setColumnWidth(2, 100)
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_delete_menu)
 
     def show_delete_menu(self, pos) -> None:
@@ -121,7 +121,7 @@ class PathViewer(QTableWidget):
 
         for idx, info in enumerate(row_info):
             item = QTableWidgetItem(info)
-            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.setItem(row, idx, item)
 
         self.add_path_in_map(path, path_type)
