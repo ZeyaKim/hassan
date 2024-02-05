@@ -28,3 +28,10 @@ class SubtitleGenerator:
         self.logger.info(
             f"Subtitle extension has been changed to {subtitle_ext_enum.value}"
         )
+
+    def generate_subtitle(self, path: str, name: str, translate_description: dict) -> None:
+        self.logger.info(f"Generating subtitle for {name}")
+        
+        # TODO: Implement subtitle generation
+        
+        self.logger.info(f"{name} has been subtitled successfully.")
