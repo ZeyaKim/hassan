@@ -27,7 +27,8 @@ class HassanTask(QStandardItemModel):
         self.parent_dir = os.path.dirname(file_path)
 
     def execute(self):
-        name = os.path.basename(self.file_path)
+        base_name = os.path.basename(self.file_path)
+        name, _ = os.path.splitext(base_name)
 
         transcription = self.audio_extractor.extract_audio(
             self.file_path,
