@@ -8,8 +8,8 @@ pyside6 = "*"
 dependency-injector = "*"
 toml = "*"
 deepl = "*"
-whisper = "*"
 pysubs2 = "*"
+openai-whisper = "*"
 
 [dev-packages]
 mypy = "*"

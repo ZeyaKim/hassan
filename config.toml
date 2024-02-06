@@ -1,6 +1,6 @@
 [audio_extractor]
-whisper_model = "medium"
-device = "cuda"
+whisper_model = "small"
+device = "cpu"
 
 [translator]
 deepl_api_key = ""

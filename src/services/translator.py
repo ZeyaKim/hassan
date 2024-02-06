@@ -17,7 +17,6 @@ class Translator:
 
     def translate_transcription(
         self,
-        file_path,
         parent_dir,
         name: str,
         execution_settings: dict,
