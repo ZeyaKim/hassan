@@ -1,8 +1,9 @@
+import concurrent.futures
 import os
 
-import concurrent.futures
-
 import deepl
+
+from src.utils.types import Sentence
 
 
 class Translator:
@@ -27,19 +28,22 @@ class Translator:
         parent_dir,
         name: str,
         translator_settings: dict,
-        transcription: list,
-    ) -> list:
+        transcription: list[Sentence],
+    ) -> list[Sentence]:
 
-        api_key = translator_settings["translator"]["api_key"]
+        api_key = translator_settings["deepl_api_key"]
         if not self.is_valid_api_key(api_key):
             return []
-
         translator = deepl.Translator(api_key)
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(
                 executor.map(
-                    lambda sentence: self.translate_sentence(sentence, translator, translator_settings["translator"]["target_lang"]),
+                    lambda sentence: self.translate_sentence(
+                        sentence,
+                        translator,
+                        translator_settings["target_lang"],
+                    ),
                     transcription,
                 )
             )
@@ -49,14 +53,29 @@ class Translator:
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(self, translator, sentence, target_lang) -> dict:
-        translated_text = translator.translate_text(sentence["text"], target_lang=target_lang)
+    def translate_sentence(self, sentence: Sentence, translator, target_lang) -> Sentence:
+        translated_text = translator.translate_text(
+            sentence["text"], target_lang=target_lang
+        )
         if translated_text:
             sentence["translated_text"] = translated_text
-        
+
         return sentence
 
     def save_translated_transcription(
-        self, parent_dir: str, name: str, transcription: list
+        self, parent_dir: str, name: str, transcription: list[Sentence]
     ) -> None:
-        translated_transcription_name = f"{os.path.join(parent_dir, name)}_translated.json"
+        translated_transcription_path = (
+            f"{os.path.join(parent_dir, name)}_translated.txt"
+        )
+
+        if os.path.exists(translated_transcription_path):
+            self.logger.info(f"{translated_transcription_path} already exists.")
+            return
+
+        with open(translated_transcription_path, "w") as f:
+            for sentence in transcription:
+                f.write(
+                    f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["translated_text"]}\n'
+                )
+        self.logger.info(f"{translated_transcription_path} has been saved successfully.")
