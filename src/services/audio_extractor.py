@@ -8,8 +8,6 @@ from src.utils.enums import WhisperDeviceEnum, WhisperModelEnum
 
 
 class AudioExtractor:
-    """Class for audio extractor service."""
-
     def __init__(
         self,
         logger: logging.Logger,
@@ -58,7 +56,7 @@ class AudioExtractor:
         if audio is None:
             return []
 
-        transcription: list = self.model.transcribe(audio, fp16=False)
+        transcription: list = self.model.transcribe(audio, fp16=False)["segments"]
         
         refined_transcription: list = []
         if transcription:
@@ -89,7 +87,12 @@ class AudioExtractor:
     def save_transcription(
         self, parent_dir: str, name: str, transcription: list
     ) -> None:
-        with open(f"{os.path.join(parent_dir, name)}.txt", "w") as file:
+        transcription_name = f"{os.path.join(parent_dir, name)}_extracted.txt"
+        if os.path.exists(transcription_name):
+            self.logger.info(f"{transcription_name} already exists.")
+            return
+        
+        with open(f"{os.path.join(parent_dir, name)}_extracted.txt", "w") as file:
             for sentence in transcription:
                 file.write(
                     f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["text"]}\n'
