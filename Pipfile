@@ -9,7 +9,7 @@ dependency-injector = "*"
 toml = "*"
 deepl = "*"
 pysubs2 = "*"
-whisper = "*"
+openai-whisper = "*"
 
 [dev-packages]
 mypy = "*"
