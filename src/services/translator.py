@@ -1,3 +1,8 @@
+import concurrent.futures
+
+import deepl
+
+
 class Translator:
     def __init__(self, logger, root_dir, config_manager, config):
         self.logger = logger
@@ -19,14 +24,42 @@ class Translator:
         self,
         parent_dir,
         name: str,
-        execution_settings: dict,
-        description: list,
-    ) -> dict:
+        translator_settings: dict,
+        transcription: list,
+    ) -> list:
 
-        # TODO: Implement translation
+        api_key = translator_settings["translator"]["api_key"]
+        if not self.is_valid_api_key(api_key):
+            return []
 
-        translated_description: dict = {}
+        translator = deepl.Translator(api_key)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(
+                executor.map(
+                    self.translate_sentence,
+                    [translator for _ in range(len(transcription))],
+                    transcription,
+                    [
+                        translator_settings["translator"]["target_lang"]
+                        for _ in range(len(transcription))
+                    ],
+                )
+            )
+
+        self.save_translated_transcription(parent_dir, name, results)
 
         self.logger.info(f"{name} has been translated successfully.")
+        return results
 
-        return translated_description
+    def translate_sentence(self, translator, sentence, target_lang) -> dict:
+        translated_text = translator.translate_text(sentence["text"], target_lang=target_lang)
+        if translated_text:
+            sentence["translated_text"] = translated_text
+        
+        return sentence
+
+    def save_translated_transcription(
+        self, parent_dir: str, name: str, transcription: list
+    ) -> None:
+        pass
