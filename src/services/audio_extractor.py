@@ -5,7 +5,7 @@ import whisper
 
 from src.utils import config_manager
 from src.utils.enums import WhisperDeviceEnum, WhisperModelEnum
-
+from src.utils.types import Sentence
 
 class AudioExtractor:
     """
@@ -78,7 +78,7 @@ class AudioExtractor:
 
     def extract_audio(
         self, file_path: str, parent_dir: str, name: str, audio_extractor_settings: dict
-    ) -> list:
+    ) -> list[Sentence]:
         """
         Extract audio transcription from a file.
 
@@ -92,9 +92,7 @@ class AudioExtractor:
             list: The refined transcription as a list of dictionaries.
 
         """
-        if self.model is None or self.is_settings_changed(
-            audio_extractor_settings
-        ):
+        if self.model is None or self.is_settings_changed(audio_extractor_settings):
             try:
                 self.model = whisper.load_model(
                     name=audio_extractor_settings["whisper_model"],
@@ -110,12 +108,11 @@ class AudioExtractor:
 
         transcription: list = self.model.transcribe(audio, fp16=False)["segments"]
 
-        refined_transcription: list = []
-        if transcription:
-            refined_transcription = self.refine_transcription(transcription)
-        else:
+        refined_transcription: list[Sentence] = self.refine_transcription(transcription)
+        
+        if not refined_transcription:
             self.logger.info("No transcription was produced.")
-            return refined_transcription
+            return []
 
         self.save_transcription(parent_dir, name, refined_transcription)
         self.logger.info(f"{name} has been extracted successfully.")
@@ -136,7 +133,7 @@ class AudioExtractor:
         """
         return audio_extractor_settings != self.last_settings_info
 
-    def refine_transcription(self, transcription: list) -> list:
+    def refine_transcription(self, transcription: list) -> list[Sentence]:
         """
         Refine the transcription by rounding the start and end times.
 
@@ -147,17 +144,21 @@ class AudioExtractor:
             list: The refined transcription as a list of dictionaries.
 
         """
-        return [
+        
+        refined_transcription: list[Sentence] = [
             {
                 "start": round(sentence["start"], 2),
                 "end": round(sentence["end"], 2),
                 "text": sentence["text"],
+                "translated_text": None,
             }
             for sentence in transcription
         ]
+        
+        return refined_transcription
 
     def save_transcription(
-        self, parent_dir: str, name: str, transcription: list
+        self, parent_dir: str, name: str, transcription: list[Sentence]
     ) -> None:
         """
         Save the transcription to a file.
@@ -171,13 +172,14 @@ class AudioExtractor:
             None
 
         """
-        transcription_name = f"{os.path.join(parent_dir, name)}_extracted.txt"
-        if os.path.exists(transcription_name):
-            self.logger.info(f"{transcription_name} already exists.")
+        transcription_path = f"{os.path.join(parent_dir, name)}_extracted.txt"
+        if os.path.exists(transcription_path):
+            self.logger.info(f"{transcription_path} already exists.")
             return
 
-        with open(f"{os.path.join(parent_dir, name)}_extracted.txt", "w") as file:
+        with open(f"{os.path.join(parent_dir, name)}_extracted.txt", "w") as f:
             for sentence in transcription:
-                file.write(
+                f.write(
                     f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["text"]}\n'
                 )
+        self.logger.info(f"{transcription_path} has been saved successfully.")
