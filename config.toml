@@ -3,7 +3,7 @@ whisper_model = "small"
 device = "cpu"
 
 [translator]
-deepl_api_key = ""
+deepl_api_key = "7967b906-19e9-d0a9-25de-ad0d98ca1b53:fx"
 target_lang = "KO"
 
 [subtitle_generator]
