@@ -2,6 +2,7 @@ import logging
 
 from src.utils import config_manager
 from src.utils.enums import SubtitleExtEnum
+from src.utils.types import Sentence
 
 
 class SubtitleGenerator:
@@ -33,7 +34,7 @@ class SubtitleGenerator:
         parent_dir: str,
         name: str,
         execution_settings: dict,
-        translate_description: dict,
+        translate_description: list[Sentence],
     ) -> None:
 
         # TODO: Implement subtitle generation
