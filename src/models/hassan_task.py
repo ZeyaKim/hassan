@@ -37,7 +37,6 @@ class HassanTask(QStandardItemModel):
             self.execution_settings["audio_extractor"],
         )
         translated_transcription = self.translator.translate_transcription(
-            self.file_path,
             self.parent_dir,
             name,
             self.execution_settings["translator"],
