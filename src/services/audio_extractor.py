@@ -7,6 +7,7 @@ from src.utils import config_manager
 from src.utils.enums import WhisperDeviceEnum, WhisperModelEnum
 from src.utils.types import Sentence
 
+
 class AudioExtractor:
     """
     A class that extracts audio transcriptions using the Whisper ASR model.
@@ -109,7 +110,7 @@ class AudioExtractor:
         transcription: list = self.model.transcribe(audio, fp16=False)["segments"]
 
         refined_transcription: list[Sentence] = self.refine_transcription(transcription)
-        
+
         if not refined_transcription:
             self.logger.info("No transcription was produced.")
             return []
@@ -144,7 +145,7 @@ class AudioExtractor:
             list: The refined transcription as a list of dictionaries.
 
         """
-        
+
         refined_transcription: list[Sentence] = [
             {
                 "start": round(sentence["start"], 2),
@@ -154,7 +155,7 @@ class AudioExtractor:
             }
             for sentence in transcription
         ]
-        
+
         return refined_transcription
 
     def save_transcription(

@@ -53,7 +53,9 @@ class Translator:
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(self, sentence: Sentence, translator, target_lang) -> Sentence:
+    def translate_sentence(
+        self, sentence: Sentence, translator, target_lang
+    ) -> Sentence:
         translated_text = translator.translate_text(
             sentence["text"], target_lang=target_lang
         )
@@ -78,4 +80,6 @@ class Translator:
                 f.write(
                     f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["translated_text"]}\n'
                 )
-        self.logger.info(f"{translated_transcription_path} has been saved successfully.")
+        self.logger.info(
+            f"{translated_transcription_path} has been saved successfully."
+        )
