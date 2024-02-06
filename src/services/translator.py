@@ -1,3 +1,5 @@
+import os
+
 import concurrent.futures
 
 import deepl
@@ -37,13 +39,8 @@ class Translator:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(
                 executor.map(
-                    self.translate_sentence,
-                    [translator for _ in range(len(transcription))],
+                    lambda sentence: self.translate_sentence(sentence, translator, translator_settings["translator"]["target_lang"]),
                     transcription,
-                    [
-                        translator_settings["translator"]["target_lang"]
-                        for _ in range(len(transcription))
-                    ],
                 )
             )
 
@@ -62,4 +59,4 @@ class Translator:
     def save_translated_transcription(
         self, parent_dir: str, name: str, transcription: list
     ) -> None:
-        pass
+        translated_transcription_name = f"{os.path.join(parent_dir, name)}_translated.json"
