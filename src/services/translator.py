@@ -60,7 +60,7 @@ class Translator:
             sentence["text"], target_lang=target_lang
         )
         if translated_text:
-            sentence["translated_text"] = translated_text
+            sentence["translated_text"] = translated_text.text
 
         return sentence
 
