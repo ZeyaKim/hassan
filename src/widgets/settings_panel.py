@@ -9,6 +9,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QPushButton,
+    QDialog,
+    QLineEdit,
+    QMessageBox,
 )
 
 from src.utils.enums import SubtitleExtEnum, WhisperDeviceEnum, WhisperModelEnum
@@ -74,17 +77,52 @@ class SettingsPanel(QWidget):
         
         h_layout = QHBoxLayout()
         
-        deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
-        h_layout.addWidget(deepl_api_key_label)
+        self.deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
+        h_layout.addWidget(self.deepl_api_key_label)
         
         h_layout.addStretch(1)
         
         edit_api_key_button = QPushButton("Edit")
+        edit_api_key_button.clicked.connect(self.show_edit_api_key_dialog)
         h_layout.addWidget(edit_api_key_button)
 
         translator_layout.addLayout(h_layout)
 
         return translator_group_box
+    
+    def show_edit_api_key_dialog(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Edit DeepL API Key")
+        dialog.setModal(True)
+        dialog.setFixedSize(500, 80)
+        
+        layout = QVBoxLayout()
+        
+        api_key_label = QLabel("Enter DeepL API Key")
+        layout.addWidget(api_key_label)
+        
+        h_layout = QHBoxLayout()
+        
+        api_key_line_edit = QLineEdit()
+        h_layout.addWidget(api_key_line_edit)
+        
+        edit_button = QPushButton("Edit")
+        edit_button.clicked.connect(lambda: self.edit_api_key(api_key_line_edit.text()))
+        h_layout.addWidget(edit_button)
+        
+        layout.addLayout(h_layout)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def edit_api_key(self, api_key):
+
+        if not self.translator.edit_api_key(api_key):
+            QMessageBox().critical(self, "Error", "Invalid API key")
+            return
+        
+        self.deepl_api_key_label.setText(f"DeepL API Key : {self.masked_api_key()}")
+        QMessageBox().information(self, "Success", "API key has been changed successfully.")
 
     def init_audio_extractor_settings_ui(self):
         audio_extractor_group_box = QGroupBox("Audio Extractor")
@@ -108,6 +146,7 @@ class SettingsPanel(QWidget):
         audio_extractor_group_box.setLayout(audio_extractor_layout)
 
         return audio_extractor_group_box
+
 
     def init_whisper_model_combobox(self):
         whisper_model_combo_box = QComboBox()
