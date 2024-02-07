@@ -61,9 +61,9 @@ class SubtitleGenerator:
             end=pysubs2.make_time(s=end_second, ms=end_ms),
             text=translated_text,
         )
-        
+
         return event
-    
+
     def save_subtitle(
         self,
         parent_dir: str,
@@ -72,16 +72,12 @@ class SubtitleGenerator:
         subtitle_ext: str,
     ) -> None:
         subtitle_path = os.path.join(parent_dir, f"{name}{subtitle_ext}")
-        
+
         if os.path.exists(subtitle_path):
             return
-        
+
         try:
-            subs.save(
-                subtitle_path,
-                encoding="utf-8",
-                format_=subtitle_ext[1:]
-            )
+            subs.save(subtitle_path, encoding="utf-8", format_=subtitle_ext[1:])
         except Exception as e:
             self.logger.error(f"Failed to save subtitle: {e}")
             return
