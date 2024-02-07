@@ -1,14 +1,16 @@
 import concurrent.futures
+import logging
 import os
 
 import deepl
 
 from src.utils.types import Sentence
+from src.utils import config_manager
 
 
 class Translator:
 
-    def __init__(self, logger, root_dir, config_manager, config):
+    def __init__(self, logger: logging.Logger, root_dir: str, config_manager: config_manager.ConfigManager, config: dict):
         self.logger = logger
         self.root_dir = root_dir
         self.config_manager = config_manager
@@ -41,7 +43,7 @@ class Translator:
 
     def translate_transcription(
         self,
-        parent_dir,
+        parent_dir: str,
         name: str,
         translator_settings: dict,
         transcription: list[Sentence],
@@ -68,8 +70,8 @@ class Translator:
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(self, sentence: Sentence, translator,
-                           target_lang) -> Sentence:
+    def translate_sentence(self, sentence: Sentence, translator: deepl.Translator,
+                           target_lang: str) -> Sentence:
         translated_text = translator.translate_text(sentence["text"],
                                                     target_lang=target_lang)
         if translated_text:
