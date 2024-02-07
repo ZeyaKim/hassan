@@ -7,6 +7,7 @@ from src.utils.types import Sentence
 
 
 class Translator:
+
     def __init__(self, logger, root_dir, config_manager, config):
         self.logger = logger
         self.root_dir = root_dir
@@ -17,14 +18,20 @@ class Translator:
         if not self.is_valid_api_key(api_key):
             self.logger.error("Invalid API key")
             return
-        
+
         self.config["translator"]["deepl_api_key"] = api_key
-        self.config_manager.save_config(self.root_dir, self.config)
-            
+        self.config_manager.save_config(self.config)
+
         self.logger.info("API key has been changed successfully.")
 
-    # TODO: api 키를 검증하는 로직을 구현해야 합니다.
     def is_valid_api_key(self, api_key: str) -> bool:
+        translator = deepl.Translator(api_key)
+        if not translator:
+            self.logger.error("Invalid API key")
+            return False
+        
+        self.config["translator"]["is_valid_api_key"] = True
+        self.config_manager.save_config(self.config)
         return True
 
     def translate_transcription(
@@ -49,34 +56,30 @@ class Translator:
                         translator_settings["target_lang"],
                     ),
                     transcription,
-                )
-            )
+                ))
 
         self.save_translated_transcription(parent_dir, name, results)
 
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(
-        self, sentence: Sentence, translator, target_lang
-    ) -> Sentence:
-        translated_text = translator.translate_text(
-            sentence["text"], target_lang=target_lang
-        )
+    def translate_sentence(self, sentence: Sentence, translator,
+                           target_lang) -> Sentence:
+        translated_text = translator.translate_text(sentence["text"],
+                                                    target_lang=target_lang)
         if translated_text:
             sentence["translated_text"] = translated_text.text
 
         return sentence
 
-    def save_translated_transcription(
-        self, parent_dir: str, name: str, transcription: list[Sentence]
-    ) -> None:
+    def save_translated_transcription(self, parent_dir: str, name: str,
+                                      transcription: list[Sentence]) -> None:
         translated_transcription_path = (
-            f"{os.path.join(parent_dir, name)}_translated.txt"
-        )
+            f"{os.path.join(parent_dir, name)}_translated.txt")
 
         if os.path.exists(translated_transcription_path):
-            self.logger.info(f"{translated_transcription_path} already exists.")
+            self.logger.info(
+                f"{translated_transcription_path} already exists.")
             return
 
         with open(translated_transcription_path, "w") as f:
@@ -85,5 +88,4 @@ class Translator:
                     f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["translated_text"]}\n'
                 )
         self.logger.info(
-            f"{translated_transcription_path} has been saved successfully."
-        )
+            f"{translated_transcription_path} has been saved successfully.")
