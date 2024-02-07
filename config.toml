@@ -4,6 +4,7 @@ device = "cpu"
 
 [translator]
 deepl_api_key = "7967b906-19e9-d0a9-25de-ad0d98ca1b53:fx"
+source_lang = "JP"
 target_lang = "KO"
 
 [subtitle_generator]
