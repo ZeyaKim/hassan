@@ -43,15 +43,15 @@ class SubtitleGenerator:
         subs: pysubs2.SSAFile = pysubs2.SSAFile()
 
         for sentence in translated_transcription:
-            subs.append(self.create_ssa_event(sentence))
+            subs.append(self._create_ssa_event(sentence))
 
         subtitle_ext = subtitle_settings["subtitle_ext"]
 
-        self.save_subtitle(parent_dir, name, subs, subtitle_ext)
+        self._save_subtitle(parent_dir, name, subs, subtitle_ext)
 
         self.logger.info(f"{name} has been subtitled successfully.")
 
-    def create_ssa_event(self, sentence: Sentence) -> pysubs2.SSAEvent:
+    def _create_ssa_event(self, sentence: Sentence) -> pysubs2.SSAEvent:
         start_second, start_ms = map(int, str(sentence["start"]).split("."))
         end_second, end_ms = map(int, str(sentence["end"]).split("."))
         translated_text: str | None = sentence["translated_text"]
@@ -64,7 +64,7 @@ class SubtitleGenerator:
 
         return event
 
-    def save_subtitle(
+    def _save_subtitle(
         self,
         parent_dir: str,
         name: str,

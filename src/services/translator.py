@@ -24,7 +24,7 @@ class Translator:
         self.config = config
 
     def edit_api_key(self, api_key: str) -> bool:
-        if not self.is_valid_api_key(api_key):
+        if not self._is_valid_api_key(api_key):
             self.logger.info("API key has not been changed.")
             return False
 
@@ -34,7 +34,7 @@ class Translator:
         self.logger.info("API key has been changed successfully.")
         return True
 
-    def is_valid_api_key(self, api_key: str) -> bool:
+    def _is_valid_api_key(self, api_key: str) -> bool:
         try:
             translator = deepl.Translator(api_key)
             result = translator.translate_text("test", target_lang="KO")
@@ -57,14 +57,14 @@ class Translator:
     ) -> list[Sentence]:
 
         api_key = translator_settings["deepl_api_key"]
-        if not self.is_valid_api_key(api_key):
+        if not self._is_valid_api_key(api_key):
             return []
         translator = deepl.Translator(api_key)
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(
                 executor.map(
-                    lambda sentence: self.translate_sentence(
+                    lambda sentence: self._translate_sentence(
                         sentence,
                         translator,
                         translator_settings["target_lang"],
@@ -73,12 +73,12 @@ class Translator:
                 )
             )
 
-        self.save_translated_transcription(parent_dir, name, results)
+        self._save_translated_transcription(parent_dir, name, results)
 
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(
+    def _translate_sentence(
         self, sentence: Sentence, translator: deepl.Translator, target_lang: str
     ) -> Sentence:
         translated_text = translator.translate_text(
@@ -89,7 +89,7 @@ class Translator:
 
         return sentence
 
-    def save_translated_transcription(
+    def _save_translated_transcription(
         self, parent_dir: str, name: str, transcription: list[Sentence]
     ) -> None:
         translated_transcription_path = (

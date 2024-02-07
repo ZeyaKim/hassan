@@ -93,7 +93,7 @@ class AudioExtractor:
             list: The refined transcription as a list of dictionaries.
 
         """
-        if self.model is None or self.is_settings_changed(audio_extractor_settings):
+        if self.model is None or self._is_settings_changed(audio_extractor_settings):
             try:
                 self.model = whisper.load_model(
                     name=audio_extractor_settings["whisper_model"],
@@ -109,19 +109,19 @@ class AudioExtractor:
 
         transcription: list = self.model.transcribe(audio, fp16=False)["segments"]
 
-        refined_transcription: list[Sentence] = self.refine_transcription(transcription)
+        refined_transcription: list[Sentence] = self._refine_transcription(transcription)
 
         if not refined_transcription:
             self.logger.info("No transcription was produced.")
             return []
 
-        self.save_transcription(parent_dir, name, refined_transcription)
+        self._save_transcription(parent_dir, name, refined_transcription)
         self.logger.info(f"{name} has been extracted successfully.")
         self.last_settings_info = audio_extractor_settings
 
         return refined_transcription
 
-    def is_settings_changed(self, audio_extractor_settings: dict) -> bool:
+    def _is_settings_changed(self, audio_extractor_settings: dict) -> bool:
         """
         Check if the audio extractor settings have changed.
 
@@ -134,7 +134,7 @@ class AudioExtractor:
         """
         return audio_extractor_settings != self.last_settings_info
 
-    def refine_transcription(self, transcription: list) -> list[Sentence]:
+    def _refine_transcription(self, transcription: list) -> list[Sentence]:
         """
         Refine the transcription by rounding the start and end times.
 
@@ -158,7 +158,7 @@ class AudioExtractor:
 
         return refined_transcription
 
-    def save_transcription(
+    def _save_transcription(
         self, parent_dir: str, name: str, transcription: list[Sentence]
     ) -> None:
         """
