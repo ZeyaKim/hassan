@@ -14,21 +14,26 @@ class Translator:
         self.config_manager = config_manager
         self.config = config
 
-    def change_api_key(self, api_key: str) -> None:
+    def edit_api_key(self, api_key: str) -> bool:
         if not self.is_valid_api_key(api_key):
-            self.logger.error("Invalid API key")
-            return
+            self.logger.info("API key has not been changed.")
+            return False
 
         self.config["translator"]["deepl_api_key"] = api_key
         self.config_manager.save_config(self.config)
 
         self.logger.info("API key has been changed successfully.")
+        return True
 
     def is_valid_api_key(self, api_key: str) -> bool:
-        translator = deepl.Translator(api_key)
-        if not translator:
+        try:
+            translator = deepl.Translator(api_key)
+            result = translator.translate_text("test", target_lang="KO")
+            if not result:
+                raise Exception
+        except Exception:
             self.logger.error("Invalid API key")
-            return False
+            return False                
         
         self.config["translator"]["is_valid_api_key"] = True
         self.config_manager.save_config(self.config)
