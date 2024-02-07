@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
+    QPushButton,
 )
 
 from src.utils.enums import SubtitleExtEnum, WhisperDeviceEnum, WhisperModelEnum
@@ -70,6 +71,18 @@ class SettingsPanel(QWidget):
         translator_layout = QVBoxLayout()
 
         translator_group_box.setLayout(translator_layout)
+        
+        h_layout = QHBoxLayout()
+        
+        deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
+        h_layout.addWidget(deepl_api_key_label)
+        
+        h_layout.addStretch(1)
+        
+        edit_api_key_button = QPushButton("Edit")
+        h_layout.addWidget(edit_api_key_button)
+
+        translator_layout.addLayout(h_layout)
 
         return translator_group_box
 
@@ -172,3 +185,8 @@ class SettingsPanel(QWidget):
     def on_subtitle_ext_combobox_changed(self, index):
         changed_ext = [ext for ext in SubtitleExtEnum][index]
         self.subtitle_generator.change_subtitle_ext(changed_ext)
+
+    def masked_api_key(self):
+        api_key = self.config["translator"]["deepl_api_key"]
+        api_key_length = len(api_key)
+        return f"{api_key[:8]}{'*' * (api_key_length - 16)}{api_key[-8:]}"
