@@ -54,7 +54,7 @@ class SubtitleGenerator:
     def create_ssa_event(self, sentence: Sentence) -> pysubs2.SSAEvent:
         start_second, start_ms = map(int, str(sentence["start"]).split("."))
         end_second, end_ms = map(int, str(sentence["end"]).split("."))
-        translated_text: str = sentence["translated_text"]
+        translated_text: str | None = sentence["translated_text"]
 
         event = pysubs2.SSAEvent(
             start=pysubs2.make_time(s=start_second, ms=start_ms),
