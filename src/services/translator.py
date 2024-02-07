@@ -1,33 +1,110 @@
+import concurrent.futures
+import logging
+import os
+
+import deepl
+import whisper
+
+from src.utils import config_manager
+from src.utils.types import Sentence
+
+
 class Translator:
-    def __init__(self, logger, root_dir, config_manager, config):
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        root_dir: str,
+        config_manager: config_manager.ConfigManager,
+        config: dict,
+    ):
         self.logger = logger
         self.root_dir = root_dir
         self.config_manager = config_manager
         self.config = config
 
-    # TODO: api 키를 변경하는 로직을 구현해야 합니다.
-    def change_api_key(self, api_key: str) -> None:
+    def edit_api_key(self, api_key: str) -> bool:
         if not self.is_valid_api_key(api_key):
-            self.logger.error("Invalid API key")
-            return
+            self.logger.info("API key has not been changed.")
+            return False
 
-    # TODO: api 키를 검증하는 로직을 구현해야 합니다.
+        self.config["translator"]["deepl_api_key"] = api_key
+        self.config_manager.save_config(self.config)
+
+        self.logger.info("API key has been changed successfully.")
+        return True
+
     def is_valid_api_key(self, api_key: str) -> bool:
+        try:
+            translator = deepl.Translator(api_key)
+            result = translator.translate_text("test", target_lang="KO")
+            if not result:
+                raise Exception
+        except Exception:
+            self.logger.error("Invalid API key")
+            return False
+
+        self.config["translator"]["is_valid_api_key"] = True
+        self.config_manager.save_config(self.config)
         return True
 
     def translate_transcription(
         self,
-        file_path,
-        parent_dir,
+        parent_dir: str,
         name: str,
-        execution_settings: dict,
-        description: list,
-    ) -> dict:
+        translator_settings: dict,
+        transcription: list[Sentence],
+    ) -> list[Sentence]:
 
-        # TODO: Implement translation
+        api_key = translator_settings["deepl_api_key"]
+        if not self.is_valid_api_key(api_key):
+            return []
+        translator = deepl.Translator(api_key)
 
-        translated_description: dict = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(
+                executor.map(
+                    lambda sentence: self.translate_sentence(
+                        sentence,
+                        translator,
+                        translator_settings["target_lang"],
+                    ),
+                    transcription,
+                )
+            )
+
+        self.save_translated_transcription(parent_dir, name, results)
 
         self.logger.info(f"{name} has been translated successfully.")
+        return results
 
-        return translated_description
+    def translate_sentence(
+        self, sentence: Sentence, translator: deepl.Translator, target_lang: str
+    ) -> Sentence:
+        translated_text = translator.translate_text(
+            sentence["text"], target_lang=target_lang
+        )
+        if translated_text and type(translated_text) == whisper.TextResult:    
+            sentence["translated_text"] = translated_text.text
+
+        return sentence
+
+    def save_translated_transcription(
+        self, parent_dir: str, name: str, transcription: list[Sentence]
+    ) -> None:
+        translated_transcription_path = (
+            f"{os.path.join(parent_dir, name)}_translated.txt"
+        )
+
+        if os.path.exists(translated_transcription_path):
+            self.logger.info(f"{translated_transcription_path} already exists.")
+            return
+
+        with open(translated_transcription_path, "w") as f:
+            for sentence in transcription:
+                f.write(
+                    f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["translated_text"]}\n'
+                )
+        self.logger.info(
+            f"{translated_transcription_path} has been saved successfully."
+        )
