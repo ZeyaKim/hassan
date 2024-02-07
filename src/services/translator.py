@@ -3,14 +3,21 @@ import logging
 import os
 
 import deepl
+import whisper
 
-from src.utils.types import Sentence
 from src.utils import config_manager
+from src.utils.types import Sentence
 
 
 class Translator:
 
-    def __init__(self, logger: logging.Logger, root_dir: str, config_manager: config_manager.ConfigManager, config: dict):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        root_dir: str,
+        config_manager: config_manager.ConfigManager,
+        config: dict,
+    ):
         self.logger = logger
         self.root_dir = root_dir
         self.config_manager = config_manager
@@ -35,8 +42,8 @@ class Translator:
                 raise Exception
         except Exception:
             self.logger.error("Invalid API key")
-            return False                
-        
+            return False
+
         self.config["translator"]["is_valid_api_key"] = True
         self.config_manager.save_config(self.config)
         return True
@@ -63,30 +70,34 @@ class Translator:
                         translator_settings["target_lang"],
                     ),
                     transcription,
-                ))
+                )
+            )
 
         self.save_translated_transcription(parent_dir, name, results)
 
         self.logger.info(f"{name} has been translated successfully.")
         return results
 
-    def translate_sentence(self, sentence: Sentence, translator: deepl.Translator,
-                           target_lang: str) -> Sentence:
-        translated_text = translator.translate_text(sentence["text"],
-                                                    target_lang=target_lang)
-        if translated_text:
+    def translate_sentence(
+        self, sentence: Sentence, translator: deepl.Translator, target_lang: str
+    ) -> Sentence:
+        translated_text = translator.translate_text(
+            sentence["text"], target_lang=target_lang
+        )
+        if translated_text and type(translated_text) == whisper.TextResult:    
             sentence["translated_text"] = translated_text.text
 
         return sentence
 
-    def save_translated_transcription(self, parent_dir: str, name: str,
-                                      transcription: list[Sentence]) -> None:
+    def save_translated_transcription(
+        self, parent_dir: str, name: str, transcription: list[Sentence]
+    ) -> None:
         translated_transcription_path = (
-            f"{os.path.join(parent_dir, name)}_translated.txt")
+            f"{os.path.join(parent_dir, name)}_translated.txt"
+        )
 
         if os.path.exists(translated_transcription_path):
-            self.logger.info(
-                f"{translated_transcription_path} already exists.")
+            self.logger.info(f"{translated_transcription_path} already exists.")
             return
 
         with open(translated_transcription_path, "w") as f:
@@ -95,4 +106,5 @@ class Translator:
                     f'{sentence["start"]} ~ {sentence["end"]}\n{sentence["translated_text"]}\n'
                 )
         self.logger.info(
-            f"{translated_transcription_path} has been saved successfully.")
+            f"{translated_transcription_path} has been saved successfully."
+        )

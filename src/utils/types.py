@@ -1,8 +1,8 @@
-from typing import TypedDict
+from typing import TypedDict, Iterable
 
 
 class Sentence(TypedDict):
     start: float
     end: float
-    text: str | None
+    text: str | Iterable[str]
     translated_text: str | None
