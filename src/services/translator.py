@@ -13,11 +13,15 @@ class Translator:
         self.config_manager = config_manager
         self.config = config
 
-    # TODO: api 키를 변경하는 로직을 구현해야 합니다.
     def change_api_key(self, api_key: str) -> None:
         if not self.is_valid_api_key(api_key):
             self.logger.error("Invalid API key")
             return
+        
+        self.config["translator"]["deepl_api_key"] = api_key
+        self.config_manager.save_config(self.root_dir, self.config)
+            
+        self.logger.info("API key has been changed successfully.")
 
     # TODO: api 키를 검증하는 로직을 구현해야 합니다.
     def is_valid_api_key(self, api_key: str) -> bool:
