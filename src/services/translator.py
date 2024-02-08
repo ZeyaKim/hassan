@@ -4,8 +4,12 @@ import os
 
 import deepl
 import whisper
+from deepl.translator import GlossaryInfo
 
+from src.models.custom_glossary import CustomGlossary
+from src.services.glossary_manager import GlossaryManager
 from src.utils import config_manager
+from src.utils.enums import SourceLanguageEnum, TargetLanguageEnum
 from src.utils.types import Sentence
 
 
@@ -17,11 +21,13 @@ class Translator:
         root_dir: str,
         config_manager: config_manager.ConfigManager,
         config: dict,
+        glossary_manager: GlossaryManager,
     ):
         self.logger = logger
         self.root_dir = root_dir
         self.config_manager = config_manager
         self.config = config
+        self.glossary_manager = glossary_manager
 
     def edit_api_key(self, api_key: str) -> bool:
         if not self._is_valid_api_key(api_key):
@@ -64,7 +70,7 @@ class Translator:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(
                 executor.map(
-                    lambda sentence: self._translate_sentence(
+                    lambda sentence: self._translate_sentence_without_glossary(
                         sentence,
                         translator,
                         translator_settings["target_lang"],
@@ -79,15 +85,73 @@ class Translator:
         return results
 
     def _translate_sentence(
-        self, sentence: Sentence, translator: deepl.Translator, target_lang: str
+        self,
+        sentence: Sentence,
+        translator: deepl.Translator,
+        source_lang,
+        target_lang: str,
+        glossary: GlossaryInfo | CustomGlossary | None,
+    ) -> Sentence:
+        match glossary:
+            case glossary if isinstance(glossary, GlossaryInfo):
+                return self._translate_sentence_with_deepl_glossary(
+                    sentence, translator, source_lang, target_lang, glossary
+                )
+            case glossary if isinstance(glossary, CustomGlossary):
+                return self._translate_sentence_with_custom_glossary(
+                    sentence, translator, source_lang, target_lang, glossary
+                )
+            case None:
+                return self._translate_sentence_without_glossary(
+                    sentence, translator, source_lang, target_lang
+                )
+
+    def _translate_sentence_without_glossary(
+        self,
+        sentence: Sentence,
+        translator: deepl.Translator,
+        source_lang: str,
+        target_lang: str,
     ) -> Sentence:
         translated_text = translator.translate_text(
-            sentence["text"], target_lang=target_lang
+            sentence["text"], 
+            source_lang=source_lang,
+            target_lang=target_lang,
         )
-        if translated_text and type(translated_text) == whisper.TextResult:    
+        if translated_text and type(translated_text) == whisper.TextResult:
             sentence["translated_text"] = translated_text.text
 
         return sentence
+
+    def _translate_sentence_with_custom_glossary(
+        self,
+        sentence: Sentence,
+        translator: deepl.Translator,
+        source_lang: str,
+        target_lang: str,
+        glossary: CustomGlossary,
+    ) -> Sentence: ...
+
+    def _translate_sentence_with_deepl_glossary(
+        self,
+        sentence: Sentence,
+        translator: deepl.Translator,
+        source_lang: str,
+        target_lang: str,
+        glossary: GlossaryInfo,
+    ) -> Sentence:
+        translated_text = translator.translate_text(
+            sentence["text"],
+            source_lang=source_lang,
+            target_lang=target_lang,
+            glossary=glossary,
+        )
+        if translated_text and type(translated_text) == whisper.TextResult:
+            sentence["translated_text"] = translated_text.text
+
+        return sentence
+        
+
 
     def _save_translated_transcription(
         self, parent_dir: str, name: str, transcription: list[Sentence]
@@ -108,3 +172,16 @@ class Translator:
         self.logger.info(
             f"{translated_transcription_path} has been saved successfully."
         )
+
+    def get_glossary(
+        self, source_lang: SourceLanguageEnum, target_lang: TargetLanguageEnum
+    ) -> dict[str, str]:
+        if self.glossary_manager.is_glossary_available_language(
+            source_lang, target_lang
+        ):
+            return self.glossary_manager.get_custom_glossary()
+
+    def create_glossary(self) -> None:
+        self.config["translator"]["glossary"] = ...
+        self.config_manager.save_config(self.config)
+        self.logger.info("Glossary has been saved successfully.")
