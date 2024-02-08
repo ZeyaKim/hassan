@@ -29,6 +29,7 @@ class WhisperDeviceEnum(Enum):
     CPU = "cpu"
     CUDA = "cuda"
 
+
 class SourceLanguageEnum(Enum):
     ARABIC = "AR"
     BULGARIAN = "BG"
@@ -60,7 +61,8 @@ class SourceLanguageEnum(Enum):
     TURKISH = "TR"
     UKRAINIAN = "UK"
     CHINESE = "ZH"
-    
+
+
 class TargetLanguageEnum(Enum):
     ARABIC = "AR"
     BULGARIAN = "BG"
@@ -94,3 +96,14 @@ class TargetLanguageEnum(Enum):
     TURKISH = "TR"
     UKRAINIAN = "UK"
     CHINESE_SIMPLIFIED = "ZH"  # 중국어 (간체)
+
+
+class GlossaryAvailableLanguageEnum(Enum):
+    JAPANESE = "JA"
+    PORTUGUESE = "PT"
+    FRANCE = "FR"
+    GERMAN = "DE"
+    ITALIAN = "IT"
+    ENGLISH = "EN"
+    CHINESE_SIMPLIFIED = "ZH"
+    POLISH = "PL"
