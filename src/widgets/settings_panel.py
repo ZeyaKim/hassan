@@ -77,19 +77,63 @@ class SettingsPanel(QWidget):
 
         h_layout = QHBoxLayout()
 
-        self.deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
-        h_layout.addWidget(self.deepl_api_key_label)
+        api_key_layout = self.init_api_key_layout()
+        h_layout.addLayout(api_key_layout)
 
-        h_layout.addStretch(1)
-
-        edit_api_key_button = QPushButton("Edit")
-        edit_api_key_button.clicked.connect(self.show_edit_api_key_dialog)
-        h_layout.addWidget(edit_api_key_button)
-
+        glossary_layout = self.init_glossary_layout()
+        h_layout.addLayout(glossary_layout)
+        
         translator_layout.addLayout(h_layout)
 
         return translator_group_box
 
+    def init_api_key_layout(self):
+        layout = QHBoxLayout()
+        
+        self.api_key_label = QLabel("Enter DeepL API Key")
+        self.deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
+        
+        layout.addWidget(self.api_key_label)
+        
+        layout.addStretch(1)
+        
+        edit_api_key_button = QPushButton("Edit")
+        edit_api_key_button.clicked.connect(self.show_edit_api_key_dialog)
+        layout.addWidget(edit_api_key_button)
+        
+        return layout
+        
+    def init_glossary_layout(self):
+        layout = QHBoxLayout()
+        
+        source_lang_label = QLabel("Source Language: ")
+        layout.addWidget(source_lang_label)
+        
+        source_lang_combo_box = QComboBox()
+        layout.addWidget(source_lang_combo_box)
+        
+        target_lang_label = QLabel("Target Language: ")
+        layout.addWidget(target_lang_label)
+        
+        target_lang_combo_box = QComboBox()
+        layout.addWidget(target_lang_combo_box)
+        
+        layout.addStretch(1)
+        
+        edit_glossary_button = QPushButton("Edit Glossary")
+        edit_glossary_button.clicked.connect(self.show_edit_glossary_dialog)
+        layout.addWidget(edit_glossary_button)
+        
+        return layout
+    
+    def show_edit_glossary_dialog(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Edit Glossary")
+        dialog.setModal(True)
+        dialog.setFixedSize(500, 80)
+        
+        dialog.exec_()
+        
     def show_edit_api_key_dialog(self):
         dialog = QDialog()
         dialog.setWindowTitle("Edit DeepL API Key")
