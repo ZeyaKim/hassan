@@ -90,10 +90,9 @@ class SettingsPanel(QWidget):
     def init_api_key_layout(self):
         layout = QHBoxLayout()
         
-        self.api_key_label = QLabel("Enter DeepL API Key")
         self.deepl_api_key_label = QLabel(f"DeepL API Key : {self.masked_api_key()}")
         
-        layout.addWidget(self.api_key_label)
+        layout.addWidget(self.deepl_api_key_label)
         
         layout.addStretch(1)
         

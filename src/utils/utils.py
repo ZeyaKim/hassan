@@ -2,16 +2,14 @@
 Util 기능을 모아놓은 모듈.
 """
 
+import __main__
 import logging
 import os
 from logging.handlers import RotatingFileHandler
 
 
 def get_root_dir():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(current_dir)
-    root_dir = os.path.dirname(src_dir)
-
+    root_dir = os.path.dirname(os.path.abspath(__main__.__file__))
     return root_dir
 
 
