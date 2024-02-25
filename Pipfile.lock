@@ -584,15 +584,6 @@
             "markers": "python_version >= '3.7'",
             "version": "==4.66.2"
         },
-        "typer": {
-            "hashes": [
-                "sha256:50922fd79aea2f4751a8e0408ff10d2662bd0c8bbfa84755a699f3bada2978b2",
-                "sha256:5d96d986a21493606a358cae4461bd8cdf83cbf33a5aa950ae629ca3b51467ee"
-            ],
-            "index": "pip_conf_index_global",
-            "markers": "python_version >= '3.6'",
-            "version": "==0.9.0"
-        },
         "typing-extensions": {
             "hashes": [
                 "sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783",
