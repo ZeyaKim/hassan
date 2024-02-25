@@ -8,8 +8,9 @@ typer = "*"
 deepl = "*"
 openai-whisper = "*"
 pysubs2 = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.11"
+python_version = "3.11.0"
