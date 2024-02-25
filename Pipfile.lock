@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4a39915ca71c2433e1d8b380df2b115c8280bb7f68b5b12afaab09c668a214a1"
+            "sha256": "4136eb1df23c0f7a09e7c82412e7a63bea334a2b984a5fdc9b3fd5e802892b90"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -369,6 +369,15 @@
             "index": "pip_conf_index_global",
             "markers": "python_version >= '3.8'",
             "version": "==20231117"
+        },
+        "pysubs2": {
+            "hashes": [
+                "sha256:0261611e71735ff7763972c519c72593c8063efcb9039c54af65f31b81cec116",
+                "sha256:1f96d9dfb5f859a54a00e04621beb20ff21ea1d788821b2f4935c5c0ef8dc68e"
+            ],
+            "index": "pip_conf_index_global",
+            "markers": "python_version >= '3.7'",
+            "version": "==1.6.1"
         },
         "regex": {
             "hashes": [
