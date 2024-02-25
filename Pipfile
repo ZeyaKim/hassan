@@ -8,6 +8,7 @@ deepl = "*"
 openai-whisper = "*"
 pysubs2 = "*"
 python-dotenv = "*"
+click = "*"
 
 [dev-packages]
 pytest = "*"
