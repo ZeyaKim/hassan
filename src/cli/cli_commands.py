@@ -18,16 +18,26 @@ command_map = {
 }
 
 
+class InvalidCommandError(Exception):
+    """유효하지 않은 명령어가 입력되었을 때 발생하는 예외입니다."""
+
+    pass
+
+
 @click.command()
 def start_app():
     """대화형 CLI 애플리케이션을 시작합니다."""
-    while True:
-        click.echo("Available commands: add path, run, exit")
-        command = click.prompt("Enter a command")
-        if command == "exit":
-            click.echo("Exiting the application.")
-            break
-        elif command in command_map:
-            command_map[command]()
-        else:
-            click.echo("Invalid command")
+    try:
+        while True:
+            click.echo("Available commands: add path, run, exit")
+            command = click.prompt("Enter a command")
+            if command == "exit":
+                click.echo("Exiting the application.")
+                break
+            elif command in command_map:
+                command_map[command]()
+            else:
+                raise InvalidCommandError()
+    except InvalidCommandError:
+        click.echo("Invalid command. Please try again.")
+        start_app()
