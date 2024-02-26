@@ -13,7 +13,6 @@ def timeout(seconds):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # 결과를 저장할 컨테이너
             result = [None]
 
             def run():
