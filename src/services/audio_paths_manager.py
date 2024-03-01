@@ -1,3 +1,6 @@
+from src.utils.enums import SupportedAudioFormatEnum
+
+
 class DuplicatePathError(Exception):
     pass
 
@@ -11,41 +14,41 @@ class AudioPathsManager:
     def __init__(self):
         self.file_paths = []
         self.folder_paths = []
+        self.supported_audio_formats = {
+            format.value for format in SupportedAudioFormatEnum
+        }
 
     def _validate_file_extension(self, path):
-        supported_extensions = [".mp3", ".wav", ".mp4"]
-        if path.suffix in supported_extensions:
+        if path.suffix in self.supported_audio_formats:
             return True
         else:
             return False
 
-    def add_file_path(self, path):
+    def add_path(self, path):
         if not path.exists():
             raise FileNotFoundError(f"{path} does not exist.")
-        if not self._validate_file_extension(path):
-            raise NotSupportedExtensionError(f"{path} is not supported.")
-        if path in self.file_paths:
+
+        if path.is_dir():
+            paths_list = self.folder_paths
+
+        elif path.is_file():
+            if not self._validate_file_extension(path):
+                raise NotSupportedExtensionError(f"{path} is not supported.")
+            paths_list = self.file_paths
+
+        if path in paths_list:
             raise DuplicatePathError(f"{path} is already added.")
+        paths_list.append(path)
 
-        self.file_paths.append(path)
+    def delete_path(self, path):
+        if path.is_dir():
+            paths_list = self.folder_paths
+        elif path.is_file():
+            paths_list = self.file_paths
 
-    def delete_file_path(self, path):
-        if path not in self.file_paths:
+        if path not in paths_list:
             raise ValueError(f"{path} is not in the list.")
-        self.file_paths.remove(path)
-
-    def add_folder_path(self, path):
-        if not path.exists():
-            raise FileNotFoundError(f"{path} does not exist.")
-        if path in self.folder_paths:
-            raise DuplicatePathError(f"{path} is already added.")
-
-        self.folder_paths.append(path)
-
-    def delete_folder_path(self, path):
-        if path not in self.folder_paths:
-            raise ValueError(f"{path} is not in the list.")
-        self.folder_paths.remove(path)
+        paths_list.remove(path)
 
     def get_paths(self):
         return {
@@ -58,21 +61,28 @@ class AudioPathsManager:
         self.folder_paths.clear()
 
     def optimize_paths(self):
-        optimized_folders = []
-        optimized_files = []
-        for folder in self.folder_paths:
-            for parent in self.folder_paths:
-                if folder.is_relative_to(parent) and parent != folder:
-                    break
-            else:
-                optimized_folders.append(folder)
 
-        for file in self.file_paths:
-            for folder in optimized_folders:
-                if file.is_relative_to(folder):
+        sorted_folder_paths = sorted(self.folder_paths, key=lambda x: str(x))
+
+        sub_folders = []
+        for idx, folder in enumerate(sorted_folder_paths):
+            if folder in sub_folders:
+                break
+            for sub_folder in sorted_folder_paths[idx + 1 :]:
+                if sub_folder.is_relative_to(folder):
+                    sub_folders.append(sub_folder)
+                else:
                     break
-            else:
-                optimized_files.append(file)
+
+        optimized_folders = [
+            folder for folder in sorted_folder_paths if folder not in sub_folders
+        ]
+
+        optimized_files = [
+            file
+            for file in self.file_paths
+            if not any(file.is_relative_to(folder) for folder in optimized_folders)
+        ]
 
         return {
             "folder_paths": optimized_folders,
@@ -83,11 +93,10 @@ class AudioPathsManager:
         optimized_folders = paths["folder_paths"]
         optimized_files = paths["file_paths"]
 
-        supported_extensions = [".mp3", ".wav", ".mp4"]
         working_files_set = set()
 
         for folder in optimized_folders:
-            for extension in supported_extensions:
+            for extension in self.supported_audio_formats:
                 working_files_set.update(folder.rglob(f"*{extension}"))
 
         for file in optimized_files:
