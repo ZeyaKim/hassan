@@ -248,11 +248,15 @@ def test_optimize_paths(audio_paths_manager, correct_audio_path, correct_folder_
     audio_paths_manager.add_file_path(correct_audio_path)
     audio_paths_manager.add_folder_path(correct_folder_path)
 
-    audio_paths_manager.add_folder_path(correct_folder_path / "sub_folder")
-    audio_paths_manager.add_file_path(correct_folder_path / "sub_folder" / "test.mp3")
+    sub_folder = correct_folder_path / "sub_folder"
+    sub_folder.mkdir()
+    sub_audio = correct_folder_path / "sub_folder" / "test.mp3"
+    sub_audio.touch()
 
-    audio_paths_manager.optimize_paths()
-    assert audio_paths_manager.get_paths() == {
+    audio_paths_manager.add_folder_path(sub_folder)
+    audio_paths_manager.add_file_path(sub_audio)
+
+    assert audio_paths_manager.optimize_paths() == {
         "folder_paths": [correct_folder_path],
         "file_paths": [correct_audio_path],
     }
@@ -267,11 +271,13 @@ def test_recursive_search_paths(audio_paths_manager, correct_audio_path, tmp_pat
     (recursive_audio_dir / "test_1.mp3").touch()
     (recursive_audio_dir / "test_2.mp3").touch()
 
-    audio_paths_manager.add_folder_path(recursive_audio_dir)
-    audio_paths_manager.add_file_path(correct_audio_path)
+    optimized_paths = {
+        "folder_paths": [recursive_audio_dir],
+        "file_paths": [correct_audio_path],
+    }
 
-    assert audio_paths_manager.recursive_search_paths() == [
+    assert audio_paths_manager.recursive_search_paths(optimized_paths) == {
         correct_audio_path,
         recursive_audio_dir / "test_1.mp3",
         recursive_audio_dir / "test_2.mp3",
-    ]
+    }
