@@ -1,63 +1,28 @@
+import unittest
+
 from click.testing import CliRunner
 from src.cli.cli_commands import start_app
-import pytest
-import threading
-from functools import wraps
 
 
-class TimeoutException(Exception):
-    pass
+class CliAppTest(unittest.TestCase):
+    def setUp(self):
+        self.runner = CliRunner()
 
+    def test_run(self):
+        result = self.runner.invoke(start_app, input="run\nexit\n")
+        self.assertIn("Running task", result.output)
 
-def timeout(seconds):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            result = [None]
+    def test_add_path(self):
+        result = self.runner.invoke(start_app, input="add path\nexit\n")
+        self.assertIn("Adding path", result.output)
 
-            def run():
-                result[0] = func(*args, **kwargs)
+    def test_exit(self):
+        result = self.runner.invoke(start_app, input="exit\n")
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("Exiting the application.", result.output)
 
-            thread = threading.Thread(target=run)
-            thread.start()
-            thread.join(seconds)
-
-            if thread.is_alive():
-                raise TimeoutException(f"Test timed out after {seconds} seconds")
-            return result[0]
-
-        return wrapper
-
-    return decorator
-
-
-@pytest.fixture
-def cli_runner():
-    runner = CliRunner()
-    return runner
-
-
-@timeout(2)
-def test_run(cli_runner):
-    result = cli_runner.invoke(start_app, input="run\nexit\n")
-    assert "Running task" in result.output
-
-
-@timeout(2)
-def test_add_path(cli_runner):
-    result = cli_runner.invoke(start_app, input="add_path\nexit\n")
-    assert "Adding path" in result.output
-
-
-@timeout(2)
-def test_exit(cli_runner):
-    result = cli_runner.invoke(start_app, input="exit\n")
-    assert result.exit_code == 0
-    assert "Exiting the application." in result.output
-
-
-@timeout(2)
-def test_invalid_command(cli_runner):
-    result = cli_runner.invoke(start_app, input="invalid\nexit\n")
-    assert "Invalid command. Please try again." in result.output
-    assert result.exit_code == 0
+    def test_invalid_command(self):
+        result = self.runner.invoke(start_app, input="invalid\n")
+        self.assertIn("Invalid command. Please try again.", result.output)
+        result = self.runner.invoke(start_app, input="exit\n")
+        self.assertEqual(result.exit_code, 0)

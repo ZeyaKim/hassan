@@ -60,7 +60,9 @@
     2. 요구하는 확장자의 파일만 리스트에 포함시킨다.
 """
 
-import pytest
+import unittest
+import tempfile
+import pathlib
 
 from src.services.audio_paths_manager import (
     AudioPathsManager,
@@ -69,215 +71,210 @@ from src.services.audio_paths_manager import (
 )
 
 
-@pytest.fixture
-def audio_paths_manager():
-    """AudioPathsManager 객체 반환"""
-    audio_paths_manager = AudioPathsManager()
-    yield audio_paths_manager
+class TestAudioPathsManager(unittest.TestCase):
+    def setUp(self):
+        # 임시 디렉토리 생성
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.test_dir = pathlib.Path(self.temp_dir.name)
 
+        # 올바른 오디오 파일 생성
+        self.correct_audio_path = self.test_dir / "test_audio.mp3"
+        self.correct_audio_path.touch()
 
-@pytest.fixture
-def correct_audio_path(tmp_path):
-    """올바른 오디오 파일 경로 반환"""
-    correct_audio_path = tmp_path / "test_audio.mp3"
-    correct_audio_path.touch()
-    yield correct_audio_path
+        # 잘못된 확장자를 가진 오디오 파일 생성
+        self.non_supported_extension_audio_path = self.test_dir / "test_audio.jpg"
+        self.non_supported_extension_audio_path.touch()
 
+        # 존재하지 않는 오디오 파일 경로 설정
+        self.wrong_audio_path = self.test_dir / "not_exist.mp3"
 
-@pytest.fixture
-def wrong_extension_audio_path(tmp_path):
-    """잘못된 확장자의 오디오 파일 경로 반환"""
-    wrong_extension_audio_path = tmp_path / "test_audio.jpg"
-    wrong_extension_audio_path.touch()
-    yield wrong_extension_audio_path
+        # 올바른 폴더 경로 생성
+        self.correct_folder_path = self.test_dir / "test_folder"
+        self.correct_folder_path.mkdir()
 
+        # 잘못된 폴더 경로 생성
+        self.wrong_folder_path = self.test_dir / "not_exist_folder"
 
-@pytest.fixture
-def wrong_audio_path(tmp_path):
-    """잘못된 오디오 파일 경로 반환"""
-    wrong_audio_path = tmp_path / "not_exist.mp3"
-    yield wrong_audio_path
+        self.audio_paths_manager = AudioPathsManager()
 
+    def test_validate_supported_file_extension(self):
+        """지원하는 확장자의 파일 확장자 검증 테스트"""
 
-@pytest.fixture
-def correct_folder_path(tmp_path):
-    """올바른 폴더 경로 반환"""
-    correct_folder_path = tmp_path / "test_folder"
-    correct_folder_path.mkdir()
-    yield correct_folder_path
+        self.assertTrue(
+            self.audio_paths_manager._validate_file_extension(self.correct_audio_path)
+        )
 
+    def test_validate_non_supported_file_extension(self):
+        """지원하지 않는 확장자의 파일 확장자 검증 테스트"""
 
-@pytest.fixture
-def wrong_folder_path(tmp_path):
-    """잘못된 폴더 경로 반환"""
-    wrong_folder_path = tmp_path / "not_exist"
-    yield wrong_folder_path
+        self.assertFalse(
+            self.audio_paths_manager._validate_file_extension(
+                self.non_supported_extension_audio_path
+            )
+        )
 
+    def test_add_file_path_success(self):
+        """파일 경로 입력 성공 테스트"""
 
-def test_validate_correct_file_extension(audio_paths_manager, correct_audio_path):
-    """파일 확장자 검증 테스트"""
+        self.audio_paths_manager.add_path(self.correct_audio_path)
+        self.assertIn(self.correct_audio_path, self.audio_paths_manager.file_paths)
 
-    assert audio_paths_manager._validate_file_extension(correct_audio_path) is True
+    def test_add_file_path_fail(self):
+        """잘못된 파일 경로 입력 실패 테스트"""
 
+        with self.assertRaises(FileNotFoundError):
+            self.audio_paths_manager.add_path(self.wrong_audio_path)
 
-def test_validate_wrong_file_extension(audio_paths_manager, wrong_extension_audio_path):
-    """잘못된 확장자의 파일 확장자 검증 테스트"""
+    def test_add_file_path_duplicate(self):
+        """중복된 파일 경로 입력 실패 테스트"""
 
-    assert (
-        audio_paths_manager._validate_file_extension(wrong_extension_audio_path)
-        is False
-    )
+        self.audio_paths_manager.add_path(self.correct_audio_path)
+        with self.assertRaises(DuplicatePathError):
+            self.audio_paths_manager.add_path(self.correct_audio_path)
 
+    def test_add_file_path_not_supported_extension(self):
+        """지원하지 않는 확장자의 파일 경로 입력 실패 테스트"""
 
-def test_add_file_path_success(audio_paths_manager, correct_audio_path):
-    """파일 경로 입력 성공 테스트"""
+        with self.assertRaises(NotSupportedExtensionError):
+            self.audio_paths_manager.add_path(self.non_supported_extension_audio_path)
 
-    audio_paths_manager.add_path(correct_audio_path)
-    assert correct_audio_path in audio_paths_manager.file_paths
+    def test_delete_file_path_success(self):
+        """파일 경로 삭제 성공 테스트"""
 
+        self.audio_paths_manager.file_paths = [self.correct_audio_path]
+        self.audio_paths_manager.delete_path(self.correct_audio_path)
+        self.assertNotIn(self.correct_audio_path, self.audio_paths_manager.file_paths)
 
-def test_add_file_path_fail(audio_paths_manager, wrong_audio_path):
-    """잘못된 파일 경로 입력 실패 테스트"""
+    def test_delete_non_exist_file_path(self):
+        """잘못된 파일 경로 삭제 실패 테스트"""
 
-    with pytest.raises(FileNotFoundError):
-        audio_paths_manager.add_path(wrong_audio_path)
+        with self.assertRaises(ValueError):
+            self.audio_paths_manager.delete_path(self.correct_audio_path)
 
+    def test_add_folder_path_success(self):
+        """폴더 경로 입력 성공 테스트"""
 
-def test_add_file_path_duplicate(audio_paths_manager, correct_audio_path):
-    """중복된 파일 경로 입력 실패 테스트"""
+        self.audio_paths_manager.add_path(self.correct_folder_path)
+        self.assertIn(self.correct_folder_path, self.audio_paths_manager.folder_paths)
 
-    audio_paths_manager.add_path(correct_audio_path)
-    with pytest.raises(DuplicatePathError):
-        audio_paths_manager.add_path(correct_audio_path)
+    def test_add_folder_path_fail(self):
+        """잘못된 폴더 경로 입력 실패 테스트"""
 
+        with self.assertRaises(FileNotFoundError):
+            self.audio_paths_manager.add_path(self.wrong_folder_path)
 
-def test_add_file_path_not_supported_extension(
-    audio_paths_manager, wrong_extension_audio_path
-):
-    """지원하지 않는 확장자의 파일 경로 입력 실패 테스트"""
+    def test_add_folder_path_duplicate(self):
+        """중복된 폴더 경로 입력 실패 테스트"""
 
-    with pytest.raises(NotSupportedExtensionError):
-        audio_paths_manager.add_path(wrong_extension_audio_path)
+        self.audio_paths_manager.add_path(self.correct_folder_path)
+        with self.assertRaises(DuplicatePathError):
+            self.audio_paths_manager.add_path(self.correct_folder_path)
 
-
-def test_delete_file_path_success(audio_paths_manager, correct_audio_path):
-    """파일 경로 삭제 성공 테스트"""
-
-    audio_paths_manager.file_paths = [correct_audio_path]
-    audio_paths_manager.delete_path(correct_audio_path)
-    assert correct_audio_path not in audio_paths_manager.file_paths
-
-
-def test_delete_file_path_fail(audio_paths_manager, correct_audio_path):
-    """잘못된 파일 경로 삭제 실패 테스트"""
-
-    with pytest.raises(ValueError):
-        audio_paths_manager.delete_path(correct_audio_path)
-
-
-def test_add_folder_path_success(audio_paths_manager, correct_folder_path):
-    """폴더 경로 입력 성공 테스트"""
-
-    audio_paths_manager.add_path(correct_folder_path)
-    assert correct_folder_path in audio_paths_manager.folder_paths
-
-
-def test_add_folder_path_fail(audio_paths_manager, wrong_folder_path):
-    """잘못된 폴더 경로 입력 실패 테스트"""
-
-    with pytest.raises(FileNotFoundError):
-        audio_paths_manager.add_path(wrong_folder_path)
-
-
-def test_add_folder_path_duplicate(audio_paths_manager, correct_folder_path):
-    """중복된 폴더 경로 입력 실패 테스트"""
-
-    audio_paths_manager.add_path(correct_folder_path)
-    with pytest.raises(DuplicatePathError):
-        audio_paths_manager.add_path(correct_folder_path)
-
-
-def test_delete_folder_path_success(audio_paths_manager, correct_folder_path):
-    """폴더 경로 삭제 성공 테스트"""
-
-    audio_paths_manager.folder_paths = [correct_folder_path]
-    audio_paths_manager.delete_path(correct_folder_path)
-    assert correct_folder_path not in audio_paths_manager.folder_paths
-
-
-def test_delete_folder_path_fail(audio_paths_manager, tmp_path):
-    """잘못된 폴더 경로 삭제 실패 테스트"""
-
-    with pytest.raises(ValueError):
-        audio_paths_manager.delete_path(tmp_path)
-
-
-def test_get_paths_success(
-    audio_paths_manager, correct_audio_path, correct_folder_path
-):
-    """저장된 경로 반환 성공 테스트"""
-
-    audio_paths_manager.add_path(correct_audio_path)
-    audio_paths_manager.add_path(correct_folder_path)
-
-    assert audio_paths_manager.get_paths() == {
-        "folder_paths": [correct_folder_path],
-        "file_paths": [correct_audio_path],
-    }
-
-
-def test_get_paths_blank(audio_paths_manager):
-    """저장된 경로가 없는 경우 반환 테스트"""
-
-    assert audio_paths_manager.get_paths() == {"folder_paths": [], "file_paths": []}
-
-
-def test_clear_paths(audio_paths_manager, correct_audio_path, correct_folder_path):
-    """저장된 경로 초기화 테스트"""
-
-    audio_paths_manager.add_path(correct_audio_path)
-    audio_paths_manager.add_path(correct_folder_path)
-
-    audio_paths_manager.clear_paths()
-    assert audio_paths_manager.get_paths() == {"folder_paths": [], "file_paths": []}
-
-
-def test_optimize_paths(audio_paths_manager, correct_audio_path, correct_folder_path):
-    """경로 중복 최적화 테스트"""
-
-    audio_paths_manager.add_path(correct_audio_path)
-    audio_paths_manager.add_path(correct_folder_path)
-
-    sub_folder = correct_folder_path / "sub_folder"
-    sub_folder.mkdir()
-    sub_audio = correct_folder_path / "sub_folder" / "test.mp3"
-    sub_audio.touch()
-
-    audio_paths_manager.add_path(sub_folder)
-    audio_paths_manager.add_path(sub_audio)
-
-    assert audio_paths_manager.optimize_paths() == {
-        "folder_paths": [correct_folder_path],
-        "file_paths": [correct_audio_path],
-    }
-
-
-def test_recursive_search_paths(audio_paths_manager, correct_audio_path, tmp_path):
-    """폴더 재귀 탐색 테스트"""
-
-    recursive_audio_dir = tmp_path / "test_folder" / "sub_folder"
-    recursive_audio_dir.mkdir(parents=True)
-
-    (recursive_audio_dir / "test_1.mp3").touch()
-    (recursive_audio_dir / "test_2.mp3").touch()
-
-    optimized_paths = {
-        "folder_paths": [recursive_audio_dir],
-        "file_paths": [correct_audio_path],
-    }
-
-    assert audio_paths_manager.recursive_search_paths(paths=optimized_paths) == {
-        correct_audio_path,
-        recursive_audio_dir / "test_1.mp3",
-        recursive_audio_dir / "test_2.mp3",
-    }
+    def test_delete_folder_path_success(self):
+        """폴더 경로 삭제 성공 테스트"""
+
+        self.audio_paths_manager.folder_paths = [self.correct_folder_path]
+        self.audio_paths_manager.delete_path(self.correct_folder_path)
+        self.assertNotIn(
+            self.correct_folder_path, self.audio_paths_manager.folder_paths
+        )
+
+    def test_delete_non_exist_folder_path(self):
+        """잘못된 폴더 경로 삭제 실패 테스트"""
+
+        with self.assertRaises(ValueError):
+            self.audio_paths_manager.delete_path(self.correct_folder_path)
+
+    def test_get_paths_success(self):
+        """저장된 경로 반환 성공 테스트"""
+
+        self.audio_paths_manager.add_path(self.correct_audio_path)
+        self.audio_paths_manager.add_path(self.correct_folder_path)
+
+        self.assertEqual(
+            self.audio_paths_manager.get_paths(),
+            {
+                "folder_paths": [self.correct_folder_path],
+                "file_paths": [self.correct_audio_path],
+            },
+        )
+
+    def test_get_paths_blank(self):
+        """저장된 경로가 없는 경우 반환 테스트"""
+
+        self.assertEqual(
+            self.audio_paths_manager.get_paths(),
+            {"folder_paths": [], "file_paths": []},
+        )
+
+    def test_clear_paths(self):
+        """저장된 경로 초기화 테스트"""
+
+        self.audio_paths_manager.add_path(self.correct_audio_path)
+        self.audio_paths_manager.add_path(self.correct_folder_path)
+
+        self.assertEqual(
+            self.audio_paths_manager.get_paths(),
+            {
+                "folder_paths": [self.correct_folder_path],
+                "file_paths": [self.correct_audio_path],
+            },
+        )
+
+        self.audio_paths_manager.clear_paths()
+        self.assertEqual(
+            self.audio_paths_manager.get_paths(),
+            {"folder_paths": [], "file_paths": []},
+        )
+
+    def test_optimize_paths(self):
+        """경로 중복 최적화 테스트"""
+
+        sub_folder = self.correct_folder_path / "sub_folder"
+        sub_folder.mkdir()
+        sub_audio = self.correct_folder_path / "sub_folder" / "test.mp3"
+        sub_audio.touch()
+
+        self.audio_paths_manager.add_path(self.correct_audio_path)
+        self.audio_paths_manager.add_path(self.correct_folder_path)
+        self.audio_paths_manager.add_path(sub_folder)
+        self.audio_paths_manager.add_path(sub_audio)
+
+        self.assertEqual(
+            self.audio_paths_manager.optimize_paths(),
+            {
+                "folder_paths": [self.correct_folder_path],
+                "file_paths": [self.correct_audio_path],
+            },
+        )
+
+    def test_recursive_search_paths(self):
+        """폴더 재귀 탐색 테스트"""
+
+        recursive_audio_dir = self.test_dir / "test_folder" / "sub_folder"
+        recursive_audio_dir.mkdir(parents=True)
+
+        (recursive_audio_dir / "test_1.mp3").touch()
+        (recursive_audio_dir / "test_2.mp3").touch()
+
+        optimized_paths = {
+            "folder_paths": [recursive_audio_dir],
+            "file_paths": [self.correct_audio_path],
+        }
+
+        self.assertEqual(
+            self.audio_paths_manager.recursive_search_paths(paths=optimized_paths),
+            {
+                self.correct_audio_path,
+                recursive_audio_dir / "test_1.mp3",
+                recursive_audio_dir / "test_2.mp3",
+            },
+        )
+
+    def tearDown(self):
+        # 임시 디렉토리 정리
+        self.temp_dir.cleanup()
+
+
+if __name__ == "__main__":
+    unittest.main()

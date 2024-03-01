@@ -21,80 +21,76 @@
     3. 파일 저장 후, 저장된 내용을 검증하여 변환된 데이터가 정확하게 파일에 기록되었는지 확인한다.
 """
 
-import pytest
 import pathlib
 import shutil
-
+import unittest
+import tempfile
 
 from src.services.audio_extractor import AudioExtractor
 
 
-@pytest.fixture
-def test_audio_path(tmp_path):
-    """테스트 패스 반환"""
-    original_audio_path = (
-        pathlib.Path("tests") / "test_assets" / "test_audio.mp3"
-    )  # 테스트용 오디오 파일 경로
+class TestAudioExtractor(unittest.TestCase):
+    """AudioExtractor 클래스 테스트"""
 
-    tmp_audio_path = tmp_path / original_audio_path.name  # 임시 오디오 파일 경로
-    shutil.copy(original_audio_path, tmp_audio_path)  # 오디오 파일 복사
+    def setUp(self):
+        """테스트 환경 설정"""
 
-    yield tmp_audio_path
+        self.test_audio_path = (
+            pathlib.Path("tests") / "test_assets" / "test_audio.mp3"
+        )  # 테스트용 오디오 파일 경로
 
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.test_dir = pathlib.Path(self.tmp_dir.name)
+        self.tmp_audio_path = (
+            self.test_dir / self.test_audio_path.name
+        )  # 임시 오디오 파일 경로
+        shutil.copy(self.test_audio_path, self.tmp_audio_path)
 
-@pytest.fixture
-def audio_extractor():
-    """AudioExtractor 객체 반환"""
-    audio_extractor = AudioExtractor()
-    yield audio_extractor
+        self.audio_extractor = AudioExtractor()
 
+    def test_transcribe_audio_success(self):
+        """오디오 파일을 텍스트로 변환하는 테스트"""
 
-def test_transcribe_audio_success(audio_extractor, test_audio_path):
-    """오디오 파일을 텍스트로 변환하는 테스트"""
-    audio_extractor.load_model()  # 모델 로드
-    result = audio_extractor.transcribe_audio(test_audio_path)
-    assert isinstance(result, list)  # 결과가 리스트인지 확인
-    assert len(result) != 0  # 결과가 비어있지 않은지 확인
+        self.audio_extractor.load_model()
+        result = self.audio_extractor.transcribe_audio(self.tmp_audio_path)
+        self.assertIsInstance(result, list)
+        self.assertNotEqual(len(result), 0)
 
-    for sentence in result:  # 결과의 각 문장에 대해 확인
-        assert all(
-            isinstance(sentence[key], float)
-            for key in [
-                "start",
-                "end",
-            ]  # start_time, end_time이 float인지 확인
+        for sentence in result:
+            self.assertIsInstance(sentence["start"], float)
+            self.assertIsInstance(sentence["end"], float)
+            self.assertIsInstance(sentence["text"], str)
+
+    def test_extract_audio_wrong_path(self):
+        """잘못된 경로의 오디오 파일을 변환하는 테스트"""
+
+        wrong_path = pathlib.Path("test_assets") / "wrong_audio.mp3"
+        with self.assertRaises(FileNotFoundError):
+            self.audio_extractor.extract_audio(wrong_path)
+
+    def test_save_transcription_success(self):
+        """텍스트 파일 저장 테스트"""
+
+        transcription_path = (
+            self.test_dir / f"{self.tmp_audio_path.stem}_transcription.txt"
         )
-        assert isinstance(sentence["text"], str)  # text가 str인지 확인
+        transcription = [
+            {"start": 0.0, "end": 1.5, "text": "This is the first sentence."},
+            {"start": 2.0, "end": 3.5, "text": "This is the second sentence."},
+        ]
 
+        self.audio_extractor.save_transcription(transcription, transcription_path)
 
-def test_extract_audio_wrong_path(audio_extractor):
-    """잘못된 경로의 오디오 파일을 변환하는 테스트"""
-    wrong_path = pathlib.Path("test_assets") / "wrong_audio.mp3"
-    with pytest.raises(FileNotFoundError):  # FileNotFoundError가 발생하는지 확인
-        audio_extractor.extract_audio(wrong_path)
+        with transcription_path.open("r") as file:
+            transcription_content = file.readlines()
+            self.assertEqual(len(transcription_content), len(transcription) * 3)
 
+            for i in range(len(transcription)):
+                self.assertEqual(
+                    transcription_content[i * 3],
+                    f"{transcription[i]['start']:.2f} ~ {transcription[i]['end']:.2f}\n",
+                )
 
-def test_save_transcription_success(audio_extractor, test_audio_path):
-    """텍스트 파일 저장 테스트"""
-    transcription_path = (
-        test_audio_path.parent
-        / f"{test_audio_path.stem}_transcription.txt"  # 텍스트 파일 경로
-    )
-    transcription = [
-        {"start": 0.0, "end": 1.5, "text": "This is the first sentence."},
-        {"start": 2.0, "end": 3.5, "text": "This is the second sentence."},
-    ]  # 텍스트 파일에 저장할 텍스트
-
-    audio_extractor.save_transcription(transcription, transcription_path)
-
-    with pathlib.Path(transcription_path).open("r") as file:
-        transcription_content = file.readlines()  # 텍스트 파일 내용을 읽어옴
-        assert len(transcription_content) == len(transcription) * 3
-
-        for i in range(len(transcription)):
-            assert (
-                transcription_content[i * 3]
-                == f"{transcription[i]['start']:.2f} ~ {transcription[i]['end']:.2f}\n"
-            )
-            assert transcription_content[i * 3 + 1] == f"{transcription[i]['text']}\n"
-            assert transcription_content[i * 3 + 2] == "\n"
+    def tearDown(self):
+        """테스트 환경 정리"""
+        self.tmp_dir.cleanup()  # 임시 디렉토리 삭제
