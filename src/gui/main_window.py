@@ -9,12 +9,15 @@ from PyQt5.QtWidgets import (
     QFileDialog,
 )
 from PyQt5.QtCore import QStringListModel
+from src.services.paths_storage import PathsStorage
+from src.services.process_handler import ProcessHandler
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, paths_storage):
+    def __init__(self, paths_storage: PathsStorage, process_handler: ProcessHandler):
         super().__init__()
         self.paths_storage = paths_storage
+        self.process_handler = process_handler
         self.setup_ui()
 
     def setup_ui(self):
@@ -75,5 +78,4 @@ class MainWindow(QMainWindow):
         )
 
     def run(self):
-        # 실행 관련 코드
-        pass
+        self.process_handler.run()
