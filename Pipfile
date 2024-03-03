@@ -7,11 +7,10 @@ name = "pip_conf_index_global"
 deepl = "*"
 openai-whisper = "*"
 pysubs2 = "*"
-python-dotenv = "*" 
+python-dotenv = "*"
 click = "*"
 
 [dev-packages]
-pytest = "*"
 coverage = "*"
 
 [requires]
