@@ -6,7 +6,10 @@ import pathlib
 import logging
 import logging.handlers
 from src.services.paths_storage import PathsStorage
-
+from src.services.audio_extractor import AudioExtractor
+from src.services.translator import Translator
+from src.services.subtitle_generator import SubtitleGenerator
+from src.services.process_handler import ProcessHandler
 
 main_path = __file__
 root_dir = os.environ["ROOT_DIR"] = str(pathlib.Path(main_path).parent.absolute())
@@ -14,9 +17,19 @@ root_dir = os.environ["ROOT_DIR"] = str(pathlib.Path(main_path).parent.absolute(
 
 def start_app():
     paths_storage = PathsStorage()
+    audio_extractor = AudioExtractor()
+    translator = Translator()
+    subtitle_generator = SubtitleGenerator()
+
+    process_handler = ProcessHandler(
+        paths_storage,
+        audio_extractor,
+        translator,
+        subtitle_generator,
+    )
 
     app = QApplication(sys.argv)
-    window = MainWindow(paths_storage)
+    window = MainWindow(paths_storage, process_handler)
     window.show()
     sys.exit(app.exec())
 
