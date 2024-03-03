@@ -9,6 +9,7 @@ dependency-injector = "*"
 openai-whisper = "*"
 deepl = "*"
 pysubs2 = "*"
+torch = "*"
 
 [dev-packages]
 
