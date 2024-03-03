@@ -5,7 +5,7 @@ def start_app():
     app = QApplication()
     window = QMainWindow()
     window.show()
-    app.exec_()
+    app.exec()
 
 
 if __name__ == "__main__":
