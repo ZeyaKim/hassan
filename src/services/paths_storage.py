@@ -24,4 +24,6 @@ class PathsStorage:
 
     def validate_supported_extension(self, file_path):
         supported_extensions = [".mp3", ".wav", ".mp4"]
-        return pathslib.Path(file_path).suffix in supported_extensions
+        if file_path.suffix in supported_extensions:
+            return True
+        return False
