@@ -9,6 +9,7 @@ openai-whisper = "*"
 pysubs2 = "*"
 python-dotenv = "*"
 click = "*"
+pyside6 = "*"
 
 [dev-packages]
 coverage = "*"
