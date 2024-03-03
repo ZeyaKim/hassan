@@ -21,8 +21,8 @@ class ProcessHandler:
 
     def run(self):
         optimized_paths = self.paths_storage.optimize_paths()
-        folders = optimized_paths["folders"]
-        files = optimized_paths["files"]
+        folders = optimized_paths["folder_paths"]
+        files = optimized_paths["file_paths"]
 
         searched_files = self.paths_storage.recursive_search_files(folders)
 
