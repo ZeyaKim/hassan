@@ -8,8 +8,11 @@ pyqt5 = "*"
 dependency-injector = "*"
 pysubs2 = "*"
 python-dotenv = "*"
-openai-whisper = "*"
 deepl = "*"
+torchvision = "*"
+torchaudio = "*"
+openai-whisper = "*"
+torch = "*"
 
 [dev-packages]
 
