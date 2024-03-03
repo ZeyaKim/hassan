@@ -9,7 +9,6 @@ dependency-injector = "*"
 openai-whisper = "*"
 deepl = "*"
 pysubs2 = "*"
-torchvision = "*"
 python-dotenv = "*"
 
 [dev-packages]
