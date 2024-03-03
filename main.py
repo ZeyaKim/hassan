@@ -5,14 +5,18 @@ import os
 import pathlib
 import logging
 import logging.handlers
+from src.services.paths_storage import PathsStorage
+
 
 main_path = __file__
 root_dir = os.environ["ROOT_DIR"] = str(pathlib.Path(main_path).parent.absolute())
 
 
 def start_app():
+    paths_storage = PathsStorage()
+
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = MainWindow(paths_storage)
     window.show()
     sys.exit(app.exec())
 
