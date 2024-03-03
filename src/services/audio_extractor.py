@@ -18,7 +18,9 @@ class AudioExtractor:
 
         if self.model is None:
             self.model = self.load_model()
+
         transcription_list = self.transcribe_audio(audio_file)
+
         transcription_path = (
             pathlib.Path(audio_file).parent
             / f"{pathlib.Path(audio_file).stem}_transcription.txt"
@@ -34,7 +36,7 @@ class AudioExtractor:
             {
                 "start": sentence["start"],
                 "end": sentence["end"],
-                "text": sentence["text"],
+                "text": str(sentence["text"]),
             }
             for sentence in segments
         ]
