@@ -5,12 +5,19 @@ import whisper
 
 class AudioExtractor:
     def __init__(self):
+        print(torch.__version__)
         self.logger = logging.getLogger(__name__)
-        self.setting = {
-            "model": "medium",
-            "device": "cuda" if torch.cuda.is_available() else "cpu",
-        }
+        self.setting = {"model": "medium", "device": self.is_cuda_available()}
+
         self.model = None
+
+    def is_cuda_available(self):
+        if torch.cuda.is_available():
+            self.logger.info("CUDA is available")
+            return True
+        else:
+            self.logger.info("CUDA is not available")
+            return False
 
     def extract_transcription(self, file_path):
         if self.model is None:

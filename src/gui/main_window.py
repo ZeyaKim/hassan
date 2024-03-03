@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QListView,
     QFileDialog,
+    QHBoxLayout,
 )
 from PyQt5.QtCore import QStringListModel
 from src.services.paths_storage import PathsStorage
@@ -30,6 +31,9 @@ class MainWindow(QMainWindow):
         add_files_button.clicked.connect(self.add_files)
         add_folder_button.clicked.connect(self.add_folder)
 
+        set_api_key_button = QPushButton("Set API Key")
+        set_api_key_button.clicked.connect(self.set_api_key)
+
         self.paths_viewer = QListView()
         self.string_list_model = QStringListModel()
 
@@ -39,17 +43,20 @@ class MainWindow(QMainWindow):
         run_button.clicked.connect(self.run)
 
         # 레이아웃 생성 및 버튼 추가
-        layout = (
-            QVBoxLayout()
-        )  # 버튼들을 수직으로 정렬하기 위한 QVBoxLayout 인스턴스 생성
-        layout.addWidget(add_files_button)  # 레이아웃에 'Add Files' 버튼 추가
-        layout.addWidget(add_folder_button)  # 레이아웃에 'Add Folders' 버튼 추가
-        layout.addWidget(self.paths_viewer)
-        layout.addWidget(run_button)
+        v_layout = QVBoxLayout()
+        h_layout = QHBoxLayout()
+
+        h_layout.addWidget(add_files_button)  # 레이아웃에 'Add Files' 버튼 추가
+        h_layout.addWidget(add_folder_button)  # 레이아웃에 'Add Folders' 버튼 추가
+        h_layout.addWidget(set_api_key_button)
+
+        v_layout.addLayout(h_layout)  # 레이아웃에 h_layout 추가
+        v_layout.addWidget(self.paths_viewer)
+        v_layout.addWidget(run_button)
 
         # 중앙 위젯 생성 및 레이아웃 설정
         central_widget = QWidget()  # 중앙 위젯 생성
-        central_widget.setLayout(layout)  # 중앙 위젯에 레이아웃 설정
+        central_widget.setLayout(v_layout)  # 중앙 위젯에 레이아웃 설정
         self.setCentralWidget(central_widget)  # 메인 윈도우의 중앙 위젯으로 설정
 
     def add_files(self):
@@ -76,6 +83,8 @@ class MainWindow(QMainWindow):
             [str(file) for file in self.paths_storage.file_paths]
             + [str(folder) for folder in self.paths_storage.folder_paths]
         )
+
+    def set_api_key(self): ...
 
     def run(self):
         self.process_handler.run()

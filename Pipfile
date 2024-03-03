@@ -6,12 +6,13 @@ name = "pip_conf_index_global"
 [packages]
 pyqt5 = "*"
 dependency-injector = "*"
-openai-whisper = "*"
-deepl = "*"
 pysubs2 = "*"
 python-dotenv = "*"
+openai-whisper = "*"
+deepl = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.11.0"
+python_version = "3.11"
+python_full_version = "3.11.0"

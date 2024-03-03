@@ -1,4 +1,6 @@
 import logging
+import threading
+
 from src.services.paths_storage import PathsStorage
 from src.services.audio_extractor import AudioExtractor
 from src.services.translator import Translator
@@ -19,17 +21,32 @@ class ProcessHandler:
         self.translator = translator
         self.subtitle_generator = subtitle_generator
 
+        self.is_running = False
+
     def run(self):
-        optimized_paths = self.paths_storage.optimize_paths()
-        folders = optimized_paths["folder_paths"]
-        files = optimized_paths["file_paths"]
+        if self.is_running:
+            self.logger.warning("Process is already running")
+            return
 
-        searched_files = self.paths_storage.recursive_search_files(folders)
+        self.is_running = True
 
-        working_files = files + searched_files
+        thread = threading.Thread(target=self._process_files)
+        thread.start()
 
-        for file in working_files:
-            self.process_audio_to_subtitle(file)
+    def _process_files(self):
+        try:
+            optimized_paths = self.paths_storage.optimize_paths()
+            folders = optimized_paths["folder_paths"]
+            files = optimized_paths["file_paths"]
+
+            searched_files = self.paths_storage.recursive_search_files(folders)
+
+            working_files = files + searched_files
+
+            for file in working_files:
+                self.process_audio_to_subtitle(file)
+        finally:
+            self.is_running = False
 
     def process_audio_to_subtitle(self, file):
         transcription = self.audio_extractor.extract_transcription(file)
