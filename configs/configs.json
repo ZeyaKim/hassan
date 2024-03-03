@@ -1,0 +1,12 @@
+{
+    "audio_extractor": {
+        "model": "medium",
+        "device": "cpu"
+    },
+    "translator": {
+    
+    },
+    "subtitle_generator": {
+
+    }
+}
