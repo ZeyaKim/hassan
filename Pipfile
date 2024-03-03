@@ -4,9 +4,9 @@ verify_ssl = false
 name = "pip_conf_index_global"
 
 [packages]
-pyside6 = "*"
+pyqt5 = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.11"
+python_version = "3.11.0"
