@@ -16,17 +16,18 @@ class SubtitleGenerator:
         subs = pysubs2.SSAFile()
 
         try:
-            with subtitle_path.open("w", encoding="utf-8") as f:
-                for sentence in translated_transcription:
-                    start_s, start_ms = math.modf(sentence["start"])
-                    end_s, end_ms = math.modf(sentence["end"])
+            for sentence in translated_transcription:
+                start_ms, start_s = math.modf(sentence["start"])
+                end_ms, end_s = math.modf(sentence["end"])
 
-                    line = pysubs2.SSAEvent(
-                        start=pysubs2.make_time(s=start_s, ms=start_ms * 1000),
-                        end=pysubs2.make_time(s=end_s, ms=end_ms * 1000),
-                        text=sentence["translated_text"],
-                    )
-                    subs.append(line)
-                subs.save(f)
+                line = pysubs2.SSAEvent(
+                    start=pysubs2.make_time(s=start_s, ms=int(start_ms * 1000)),
+                    end=pysubs2.make_time(s=end_s, ms=int(end_ms * 1000)),
+                    text=sentence["translated_text"],
+                )
+                subs.append(line)
+
+            subs.save(str(subtitle_path))
+
         except Exception as e:
             self.logger.error(f"Failed to create subtitle: {e}")
