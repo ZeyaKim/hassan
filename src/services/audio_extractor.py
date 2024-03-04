@@ -14,10 +14,10 @@ class AudioExtractor:
     def is_cuda_available(self):
         if torch.cuda.is_available():
             self.logger.info("CUDA is available")
-            return True
+            return "cuda"
         else:
             self.logger.info("CUDA is not available")
-            return False
+            return "cpu"
 
     def extract_transcription(self, file_path):
         if self.model is None:
@@ -38,5 +38,16 @@ class AudioExtractor:
             for segment in segments
         ]
 
+        self.save_transcription(transcription, file_path)
+
         self.logger.info(f"Transcription of {file_path} is done")
         return transcription
+
+    def save_transcription(self, transcription, file_path):
+        transcription_path = file_path.parent / f"{file_path.stem}.txt"
+
+        with transcription_path.open("w") as f:
+            for sentence in transcription:
+                f.write(
+                    f"{sentence['start']} - {sentence['end']}\n{sentence['text']}\n\n"
+                )
