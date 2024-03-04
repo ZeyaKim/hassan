@@ -3,6 +3,7 @@ import os
 import pathlib
 import dotenv
 import deepl
+import concurrent.futures
 
 
 class Translator:
@@ -26,7 +27,7 @@ class Translator:
             deepl_api_key = os.getenv("DEEPL_API_KEY")
             return deepl_api_key
 
-    def validate_api_kdy(self, api_key):
+    def validate_api_key(self, api_key):
         try:
             self.translator = deepl.Translator(auth_key=api_key)
             self.logger.info("API key is valid")
@@ -36,14 +37,51 @@ class Translator:
             return False
 
     def set_api_key(self, api_key):
-        if self.validate_api_kdy(api_key):
+        if self.validate_api_key(api_key):
             self.deepl_api_key = api_key
             dotenv.set_key(self.env_path, "DEEPL_API_KEY", api_key)
             self.logger.info(f"Now, API key is set to {api_key}")
-        self.logger.warning("API key is not set")
+        else:
+            self.logger.error("Failed to set API key")
 
     def translate(self, transcription, file_path):
         if self.translator is None:
             self.translator = deepl.Translator(auth_key=self.deepl_api_key)
 
-    def translate_sentence(self, sentence): ...
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            translated_transcription = list(
+                executor.map(
+                    lambda sentence: {
+                        "start": sentence["start"],
+                        "end": sentence["end"],
+                        "translated_text": self.translate_sentence(sentence["text"]),
+                    },
+                    transcription,
+                )
+            )
+
+        self.save_translated_text(translated_transcription, file_path)
+
+        # 번역된 문장들의 리스트 반환
+        return translated_transcription
+
+    def translate_sentence(self, text):
+        result = str(
+            self.translator.translate_text(text, source_lang="JA", target_lang="KO")
+        )
+        return result
+
+    def save_translated_text(self, translated_transcription, file_path):
+        translated_trancription_path = (
+            file_path.parent / f"{file_path.stem}_translated.txt"
+        )
+        with translated_trancription_path.open("w") as f:
+            for sentence in translated_transcription:
+                line = f"{sentence['start']} - {sentence['end']}\n{sentence['translated_text']}\n\n"
+                f.write(line)
+
+    def get_masked_api_key(self):
+        if self.deepl_api_key == "":
+            return ""
+        else:
+            return f"{self.deepl_api_key[:4]}{'*' * 16}{self.deepl_api_key[-4:]}"
