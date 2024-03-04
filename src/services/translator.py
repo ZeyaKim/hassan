@@ -75,7 +75,7 @@ class Translator:
         translated_trancription_path = (
             file_path.parent / f"{file_path.stem}_translated.txt"
         )
-        with translated_trancription_path.open("w") as f:
+        with translated_trancription_path.open("w", encoding="utf-8") as f:
             for sentence in translated_transcription:
                 line = f"{sentence['start']} - {sentence['end']}\n{sentence['translated_text']}\n\n"
                 f.write(line)
