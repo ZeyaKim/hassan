@@ -1,5 +1,6 @@
 import logging
 import pysubs2
+import math
 
 
 class SubtitleGenerator:
@@ -17,9 +18,12 @@ class SubtitleGenerator:
         try:
             with subtitle_path.open("w", encoding="utf-8") as f:
                 for sentence in translated_transcription:
+                    start_s, start_ms = math.modf(sentence["start"])
+                    end_s, end_ms = math.modf(sentence["end"])
+
                     line = pysubs2.SSAEvent(
-                        start=round(sentence["start"], 2),
-                        end=round(sentence["end"], 2),
+                        start=pysubs2.make_time(s=start_s, ms=start_ms * 1000),
+                        end=pysubs2.make_time(s=end_s, ms=end_ms * 1000),
                         text=sentence["translated_text"],
                     )
                     subs.append(line)
