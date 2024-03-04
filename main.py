@@ -36,10 +36,13 @@ def start_app():
 
 def init_logging():
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     root_dir = os.environ["ROOT_DIR"]
     log_path = pathlib.Path(root_dir) / "logs" / "app.log"
+    if not log_path.parent.exists():
+        log_path.parent.mkdir(parents=True)
+        log_path.touch()
 
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -49,7 +52,7 @@ def init_logging():
         log_path, maxBytes=1024 * 1024 * 10, backupCount=5
     )
 
-    rotating_file_handler.setLevel(logging.WARNING)  # 수정된 부분
+    rotating_file_handler.setLevel(logging.INFO)  # 수정된 부분
     rotating_file_handler.setFormatter(formatter)
 
     logger.addHandler(rotating_file_handler)

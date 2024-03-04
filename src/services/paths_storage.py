@@ -91,3 +91,8 @@ class PathsStorage:
                 matched_files = folder.rglob(f"*{extension}")
                 files.extend(matched_files)
         return files
+
+    def clear_paths(self):
+        self.file_paths.clear()
+        self.folder_paths.clear()
+        self.logger.info("All paths are cleared")

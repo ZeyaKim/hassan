@@ -1,4 +1,5 @@
 import pathlib
+import os
 
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -11,8 +12,11 @@ from PyQt5.QtWidgets import (
     QDialog,
     QLabel,
     QLineEdit,
+    QSystemTrayIcon,
 )
-from PyQt5.QtCore import QStringListModel
+from PyQt5.QtGui import QIcon
+
+from PyQt5.QtCore import QStringListModel, Qt
 from src.services.paths_storage import PathsStorage
 from src.services.process_handler import ProcessHandler
 from src.services.translator import Translator
@@ -26,10 +30,16 @@ class MainWindow(QMainWindow):
         translator: Translator,
     ):
         super().__init__()
+        self.root_dir = pathlib.Path(os.environ["ROOT_DIR"])
+        self.icon_path = self.root_dir / "assets" / "hassan_icon.png"
+
         self.paths_storage = paths_storage
         self.process_handler = process_handler
         self.translator = translator
         self.setup_ui()
+
+        self.is_running = False
+        self.process_handler.finished_func = self.on_finished
 
     def setup_ui(self):
         self.setWindowTitle("Hello World")
@@ -49,6 +59,9 @@ class MainWindow(QMainWindow):
 
         self.paths_viewer.setModel(self.string_list_model)
 
+        self.is_running_label = QLabel("Process is not running")
+        self.is_running_label.setAlignment(Qt.AlignCenter)
+
         run_button = QPushButton("Run")
         run_button.clicked.connect(self.run)
 
@@ -62,6 +75,7 @@ class MainWindow(QMainWindow):
 
         v_layout.addLayout(h_layout)  # 레이아웃에 h_layout 추가
         v_layout.addWidget(self.paths_viewer)
+        v_layout.addWidget(self.is_running_label)
         v_layout.addWidget(run_button)
 
         # 중앙 위젯 생성 및 레이아웃 설정
@@ -95,9 +109,9 @@ class MainWindow(QMainWindow):
         )
 
     def set_api_key(self):
-        set_api_key_dialog = QDialog()
-        set_api_key_dialog.setWindowTitle("Set API Key")
-        set_api_key_dialog.setGeometry(100, 100, 400, 100)
+        self.set_api_key_dialog = QDialog()
+        self.set_api_key_dialog.setWindowTitle("Set API Key")
+        self.set_api_key_dialog.setGeometry(100, 100, 400, 100)
 
         layout = QVBoxLayout()
 
@@ -109,15 +123,44 @@ class MainWindow(QMainWindow):
         api_key_input = QLineEdit()
         layout.addWidget(api_key_input)
 
+        self.translator.api_key_changed.connect(self.api_key_changed)
+
         set_api_key_button = QPushButton("Set")
         set_api_key_button.clicked.connect(
             lambda: self.translator.set_api_key(api_key_input.text())
         )
         layout.addWidget(set_api_key_button)
 
-        set_api_key_dialog.setLayout(layout)
+        self.set_api_key_dialog.setLayout(layout)
+        self.set_api_key_dialog.exec_()
 
-        set_api_key_dialog.exec_()
+    def api_key_changed(self):
+        self.set_api_key_dialog.close()
 
     def run(self):
-        self.process_handler.run()
+        if self.is_running:
+            self.logger.warning("Process is already running")
+
+        self.is_running = True
+        self.is_running_label.setText("Process is running")
+
+        self.process_handler.finished.connect(self.on_finished)
+        try:
+            self.process_handler.run()
+        except Exception as e:
+            self.send_message(f"Failed to process files: {e}")
+        finally:
+            self.paths_storage.clear_paths()
+            self.string_list_model.setStringList([])
+
+    def send_message(self, message):
+        tray_icon = QSystemTrayIcon(QIcon(str(self.icon_path)), self)
+        tray_icon.show()
+        tray_icon.showMessage(
+            "Process Handler", message, QSystemTrayIcon.Information, 2000
+        )
+
+    def on_finished(self):
+        self.is_running_label.setText("Process is not running")
+        self.is_running = False
+        self.send_message("Process is done")

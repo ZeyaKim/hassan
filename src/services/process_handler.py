@@ -1,13 +1,17 @@
 import logging
 import threading
 
+from PyQt5.QtCore import pyqtSignal, QObject
+
 from src.services.paths_storage import PathsStorage
 from src.services.audio_extractor import AudioExtractor
 from src.services.translator import Translator
 from src.services.subtitle_generator import SubtitleGenerator
 
 
-class ProcessHandler:
+class ProcessHandler(QObject):
+    finished = pyqtSignal()
+
     def __init__(
         self,
         paths_storage: PathsStorage,
@@ -15,6 +19,7 @@ class ProcessHandler:
         translator: Translator,
         subtitle_generator: SubtitleGenerator,
     ):
+        super().__init__()
         self.logger = logging.getLogger(__name__)
         self.paths_storage = paths_storage
         self.audio_extractor = audio_extractor
@@ -49,7 +54,10 @@ class ProcessHandler:
 
             for file in working_files:
                 self.process_audio_to_subtitle(file)
+        except Exception as e:
+            self.logger.error(f"Failed to process files: {e}")
         finally:
+            self.finished.emit()
             self.is_running = False
 
     def process_audio_to_subtitle(self, file):
