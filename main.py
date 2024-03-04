@@ -29,7 +29,7 @@ def start_app():
     )
 
     app = QApplication(sys.argv)
-    window = MainWindow(paths_storage, process_handler)
+    window = MainWindow(paths_storage, process_handler, translator)
     window.show()
     sys.exit(app.exec())
 
