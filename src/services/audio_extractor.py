@@ -46,7 +46,7 @@ class AudioExtractor:
     def save_transcription(self, transcription, file_path):
         transcription_path = file_path.parent / f"{file_path.stem}.txt"
 
-        with transcription_path.open("w") as f:
+        with transcription_path.open("w", encoding="utf-8") as f:
             for sentence in transcription:
                 f.write(
                     f"{sentence['start']} - {sentence['end']}\n{sentence['text']}\n\n"
