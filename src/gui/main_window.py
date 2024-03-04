@@ -8,17 +8,27 @@ from PyQt5.QtWidgets import (
     QListView,
     QFileDialog,
     QHBoxLayout,
+    QDialog,
+    QLabel,
+    QLineEdit,
 )
 from PyQt5.QtCore import QStringListModel
 from src.services.paths_storage import PathsStorage
 from src.services.process_handler import ProcessHandler
+from src.services.translator import Translator
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, paths_storage: PathsStorage, process_handler: ProcessHandler):
+    def __init__(
+        self,
+        paths_storage: PathsStorage,
+        process_handler: ProcessHandler,
+        translator: Translator,
+    ):
         super().__init__()
         self.paths_storage = paths_storage
         self.process_handler = process_handler
+        self.translator = translator
         self.setup_ui()
 
     def setup_ui(self):
@@ -84,7 +94,30 @@ class MainWindow(QMainWindow):
             + [str(folder) for folder in self.paths_storage.folder_paths]
         )
 
-    def set_api_key(self): ...
+    def set_api_key(self):
+        set_api_key_dialog = QDialog()
+        set_api_key_dialog.setWindowTitle("Set API Key")
+        set_api_key_dialog.setGeometry(100, 100, 400, 100)
+
+        layout = QVBoxLayout()
+
+        current_api_key_label = QLabel(
+            f"Current API Key: {self.translator.get_masked_api_key()}"
+        )
+        layout.addWidget(current_api_key_label)
+
+        api_key_input = QLineEdit()
+        layout.addWidget(api_key_input)
+
+        set_api_key_button = QPushButton("Set")
+        set_api_key_button.clicked.connect(
+            lambda: self.translator.set_api_key(api_key_input.text())
+        )
+        layout.addWidget(set_api_key_button)
+
+        set_api_key_dialog.setLayout(layout)
+
+        set_api_key_dialog.exec_()
 
     def run(self):
         self.process_handler.run()
