@@ -28,6 +28,10 @@ class ProcessHandler:
             self.logger.warning("Process is already running")
             return
 
+        if self.translator.deepl_api_key == "":
+            self.logger.error("API key is not set")
+            return
+
         self.is_running = True
 
         thread = threading.Thread(target=self._process_files)
