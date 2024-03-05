@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QLineEdit,
 )
-from PyQt5.QtCore import QStringListModel
+from PyQt5.QtCore import QStringListModel, Qt
 from src.services.paths_storage import PathsStorage
 from src.services.process_handler import ProcessHandler
 from src.services.translator import Translator
@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         self.setup_ui()
 
         self.process_handler.finished.connect(self.on_finished)
+        self.translator.api_key_changed.connect(self.api_key_changed)
 
     def setup_ui(self):
         self.setWindowTitle("Hassan")
@@ -52,9 +53,10 @@ class MainWindow(QMainWindow):
         self.paths_viewer.setModel(self.string_list_model)
 
         self.is_running_label = QLabel("Process is not running")
+        self.is_running_label.setAlignment(Qt.AlignCenter)
 
         run_button = QPushButton("Run")
-        run_button.clicked.connect(self.run)
+        run_button.clicked.connect(lambda: self.run())
 
         # 레이아웃 생성 및 버튼 추가
         v_layout = QVBoxLayout()
@@ -100,9 +102,9 @@ class MainWindow(QMainWindow):
         )
 
     def set_api_key(self):
-        set_api_key_dialog = QDialog()
-        set_api_key_dialog.setWindowTitle("Set API Key")
-        set_api_key_dialog.setGeometry(100, 100, 400, 100)
+        self.set_api_key_dialog = QDialog()
+        self.set_api_key_dialog.setWindowTitle("Set API Key")
+        self.set_api_key_dialog.setGeometry(100, 100, 400, 100)
 
         layout = QVBoxLayout()
 
@@ -114,15 +116,15 @@ class MainWindow(QMainWindow):
         api_key_input = QLineEdit()
         layout.addWidget(api_key_input)
 
-        set_api_key_button = QPushButton("Set")
-        set_api_key_button.clicked.connect(
+        self.set_api_key_button = QPushButton("Set")
+        self.set_api_key_button.clicked.connect(
             lambda: self.translator.set_api_key(api_key_input.text())
         )
-        layout.addWidget(set_api_key_button)
+        layout.addWidget(self.set_api_key_button)
 
-        set_api_key_dialog.setLayout(layout)
+        self.set_api_key_dialog.setLayout(layout)
 
-        set_api_key_dialog.exec_()
+        self.set_api_key_dialog.exec_()
 
     def run(self):
         self.is_running_label.setText("Process is running")
@@ -130,3 +132,6 @@ class MainWindow(QMainWindow):
 
     def on_finished(self):
         self.is_running_label.setText("Process is not running")
+
+    def api_key_changed(self):
+        self.set_api_key_dialog.close()
