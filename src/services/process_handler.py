@@ -6,8 +6,12 @@ from src.services.audio_extractor import AudioExtractor
 from src.services.translator import Translator
 from src.services.subtitle_generator import SubtitleGenerator
 
+from PyQt5.QtCore import pyqtSignal, QObject
 
-class ProcessHandler:
+
+class ProcessHandler(QObject):
+    finished = pyqtSignal()
+
     def __init__(
         self,
         paths_storage: PathsStorage,
@@ -15,6 +19,8 @@ class ProcessHandler:
         translator: Translator,
         subtitle_generator: SubtitleGenerator,
     ):
+        super().__init__()
+
         self.logger = logging.getLogger(__name__)
         self.paths_storage = paths_storage
         self.audio_extractor = audio_extractor
@@ -24,18 +30,21 @@ class ProcessHandler:
         self.is_running = False
 
     def run(self):
-        if self.is_running:
-            self.logger.warning("Process is already running")
-            return
+        try:
+            if self.is_running:
+                self.logger.warning("Process is already running")
+                return
 
-        if self.translator.deepl_api_key == "":
-            self.logger.error("API key is not set")
-            return
+            if self.translator.deepl_api_key == "":
+                self.logger.error("API key is not set")
+                return
 
-        self.is_running = True
+            self.is_running = True
 
-        thread = threading.Thread(target=self._process_files)
-        thread.start()
+            thread = threading.Thread(target=self._process_files)
+            thread.start()
+        finally:
+            self.finished.emit()
 
     def _process_files(self):
         try:

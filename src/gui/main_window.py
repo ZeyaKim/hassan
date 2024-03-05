@@ -31,6 +31,8 @@ class MainWindow(QMainWindow):
         self.translator = translator
         self.setup_ui()
 
+        self.process_handler.finished.connect(self.on_finished)
+
     def setup_ui(self):
         self.setWindowTitle("Hello World")
         self.setGeometry(100, 100, 800, 600)
@@ -49,6 +51,8 @@ class MainWindow(QMainWindow):
 
         self.paths_viewer.setModel(self.string_list_model)
 
+        self.is_running_label = QLabel("Process is not running")
+
         run_button = QPushButton("Run")
         run_button.clicked.connect(self.run)
 
@@ -62,6 +66,7 @@ class MainWindow(QMainWindow):
 
         v_layout.addLayout(h_layout)  # 레이아웃에 h_layout 추가
         v_layout.addWidget(self.paths_viewer)
+        v_layout.addWidget(self.is_running_label)
         v_layout.addWidget(run_button)
 
         # 중앙 위젯 생성 및 레이아웃 설정
@@ -120,4 +125,8 @@ class MainWindow(QMainWindow):
         set_api_key_dialog.exec_()
 
     def run(self):
+        self.is_running_label.setText("Process is running")
         self.process_handler.run()
+
+    def on_finished(self):
+        self.is_running_label.setText("Process is not running")

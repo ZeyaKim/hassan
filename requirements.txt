@@ -1,5 +1,8 @@
 deepl==1.17.0
 openai_whisper==20230314
 PyQt5==5.15.10
+PyQt5_sip==12.12.1
 pysubs2==1.6.1
 python-dotenv==1.0.1
+torch==2.2.1+cu121 @ https://download.pytorch.org/whl/cu121
+whisper==1.1.10
