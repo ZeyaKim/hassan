@@ -4,11 +4,15 @@ import pathlib
 import dotenv
 import deepl
 import concurrent.futures
+from PyQt5.QtCore import pyqtSignal, QObject
 
 
-class Translator:
+class Translator(QObject):
+    api_key_changed = pyqtSignal()
 
     def __init__(self):
+        super().__init__()
+
         self.logger = logging.getLogger(__name__)
         self.root_dir = pathlib.Path(os.environ["ROOT_DIR"])
         self.env_path = self.root_dir / ".env"
@@ -41,6 +45,7 @@ class Translator:
             self.deepl_api_key = api_key
             dotenv.set_key(self.env_path, "DEEPL_API_KEY", api_key)
             self.logger.info(f"Now, API key is set to {api_key}")
+            self.api_key_changed.emit()
         else:
             self.logger.error("Failed to set API key")
 
