@@ -28,7 +28,7 @@ class AudioExtractor:
             {
                 "start": segment["start"],
                 "end": segment["end"],
-                "text": str(segment["text"]),
+                "text": str(segment["text"]).strip(),
             }
             for segment in segments
         ]
