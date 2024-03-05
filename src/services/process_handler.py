@@ -58,6 +58,8 @@ class ProcessHandler(QObject):
 
             for file in working_files:
                 self.process_audio_to_subtitle(file)
+        except Exception as e:
+            self.logger.error(f"Failed to process files: {e}")
         finally:
             self.is_running = False
             self.finished.emit()
