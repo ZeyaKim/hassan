@@ -41,6 +41,10 @@ def init_logging():
     root_dir = os.environ["ROOT_DIR"]
     log_path = pathlib.Path(root_dir) / "logs" / "app.log"
 
+    if not log_path.parent.exists():
+        log_path.parent.mkdir(parents=True)
+        log_path.touch()
+
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )

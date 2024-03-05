@@ -1,0 +1,5 @@
+deepl==1.17.0
+openai_whisper==20230314
+PyQt5==5.15.10
+pysubs2==1.6.1
+python-dotenv==1.0.1
