@@ -7,7 +7,10 @@ class AudioExtractor:
     def __init__(self):
         print(torch.__version__)
         self.logger = logging.getLogger(__name__)
-        self.setting = {"model": "medium", "device": "cuda"}
+        try:
+            self.setting = {"model": "medium", "device": "cuda"}
+        except Exception:
+            self.logger.error("Cuda is not available")
 
         self.model = None
 
