@@ -43,8 +43,8 @@ class ProcessHandler(QObject):
 
             thread = threading.Thread(target=self._process_files)
             thread.start()
-        finally:
-            self.finished.emit()
+        except Exception as e:
+            self.logger.error(f"Failed to run process: {e}")
 
     def _process_files(self):
         try:
@@ -60,6 +60,7 @@ class ProcessHandler(QObject):
                 self.process_audio_to_subtitle(file)
         finally:
             self.is_running = False
+            self.finished.emit()
 
     def process_audio_to_subtitle(self, file):
         transcription = self.audio_extractor.extract_transcription(file)
