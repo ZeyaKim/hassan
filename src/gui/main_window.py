@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         self.process_handler.finished.connect(self.on_finished)
 
     def setup_ui(self):
-        self.setWindowTitle("Hello World")
+        self.setWindowTitle("Hassan")
         self.setGeometry(100, 100, 800, 600)
 
         add_files_button = QPushButton("Add Files")
